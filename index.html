@@ -14,10 +14,16 @@
   </style>
 </head>
 <body>
-  <h1>WebStage Core · Fase 1: MIDI</h1>
-  <button id="start">Conectar piano MIDI</button>
+  <h1>WebStage Core · Fase 2: Audio</h1>
+  <button id="start">Iniciar audio y MIDI</button>
   <div id="status"></div>
   <div id="devices"></div>
+
+  <label>Volumen
+    <input id="volume" type="range" min="0" max="1" step="0.01" value="0.7" />
+  </label>
+  <div id="latency">Latencia: (inicia el audio)</div>
+
   <div id="keyboard"></div>
   <div id="log"></div>
   <script type="module" src="/src/main.js"></script>
