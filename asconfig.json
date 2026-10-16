@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "release": {
+      "outFile": "public/engine.wasm",
+      "optimizeLevel": 3,
+      "shrinkLevel": 0,
+      "noAssert": true,
+      "runtime": "stub"
+    }
+  },
+  "options": {
+    "bindings": false
+  }
+}
