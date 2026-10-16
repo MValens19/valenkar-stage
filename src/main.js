@@ -45,7 +45,9 @@ $("start").addEventListener("click", async () => {
   // 1) Audio (debe iniciarse con un gesto del usuario)
   try {
     await engine.start();
-    $("status").textContent = "Audio listo. ";
+    const info = await engine.loadSample(`${import.meta.env.BASE_URL}samples/C4.mp3`);
+$("status").textContent = `Audio listo. Sample C4 cargado (${info.seconds.toFixed(1)} s). `;
+  
     showLatency();
     setInterval(showLatency, 2000); // outputLatency puede cambiar
   } catch (err) {

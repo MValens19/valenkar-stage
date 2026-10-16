@@ -1,63 +1,55 @@
-// Motor de audio en WebAssembly. Sin asignaciones de memoria durante process().
+// Motor Wasm 3B: reproduce un sample (sin cambio de tono todavía).
 const MAX_VOICES: i32 = 32;
 const MAX_FRAMES: i32 = 1024;
-const TWO_PI: f64 = 2.0 * Math.PI;
+const MAX_SAMPLE: i32 = 48000 * 12; // hasta 12 s a 48 kHz (~2.3 MB)
 
-// Estado de las voces (arreglos estáticos, reservados una sola vez)
-const vStage = new StaticArray<i32>(MAX_VOICES);   // 0 libre, 1 ataque, 2 caída, 3 release
+const vStage = new StaticArray<i32>(MAX_VOICES);   // 0 libre, 1 ataque, 2 sostenida, 3 release
 const vNote = new StaticArray<i32>(MAX_VOICES);
 const vKeyDown = new StaticArray<bool>(MAX_VOICES);
 const vAge = new StaticArray<i32>(MAX_VOICES);
-const vPhase = new StaticArray<f64>(MAX_VOICES);
-const vInc = new StaticArray<f64>(MAX_VOICES);
+const vPos = new StaticArray<i32>(MAX_VOICES);     // posición de lectura en el sample
 const vEnv = new StaticArray<f32>(MAX_VOICES);
 const vAmp = new StaticArray<f32>(MAX_VOICES);
 
-// Buffer de salida que JS lee directamente de la memoria de Wasm
 const outBuf = new StaticArray<f32>(MAX_FRAMES);
+const sampleBuf = new StaticArray<f32>(MAX_SAMPLE);
 
-let sampleRate: f64 = 48000.0;
-let attackStep: f32 = 0.01;
-let decayCoef: f32 = 0.9999;
+let sampleLen: i32 = 0;
+let attackStep: f32 = 0.02;
 let releaseCoef: f32 = 0.999;
 let sustainDown: bool = false;
 let counter: i32 = 0;
 
 export function init(sr: f64): void {
-  sampleRate = sr;
-  attackStep = <f32>(1.0 / (0.005 * sr));            // ataque de 5 ms
-  decayCoef = <f32>Math.exp(-1.0 / (2.0 * sr));      // caída ~2 s
-  releaseCoef = <f32>Math.exp(-1.0 / (0.12 * sr));   // apagado ~120 ms
+  attackStep = <f32>(1.0 / (0.001 * sr));           // ataque de 1 ms (anti-clic)
+  releaseCoef = <f32>Math.exp(-1.0 / (0.12 * sr));  // apagado ~120 ms
   sustainDown = false;
   for (let i = 0; i < MAX_VOICES; i++) vStage[i] = 0;
 }
 
-export function getOutPtr(): usize {
-  return changetype<usize>(outBuf);
-}
+export function getOutPtr(): usize { return changetype<usize>(outBuf); }
+export function getSamplePtr(): usize { return changetype<usize>(sampleBuf); }
+export function getMaxSample(): i32 { return MAX_SAMPLE; }
+export function setSampleLength(n: i32): void { sampleLen = n; }
 
 export function noteOn(note: i32, velocity: i32): void {
-  // Busca una voz libre
   let idx: i32 = -1;
   for (let i = 0; i < MAX_VOICES; i++) {
     if (vStage[i] == 0) { idx = i; break; }
   }
-  // Voice stealing: si no hay libres, roba la más antigua
-  if (idx < 0) {
+  if (idx < 0) { // voice stealing: la más antigua
     let oldest: i32 = i32.MAX_VALUE;
     for (let i = 0; i < MAX_VOICES; i++) {
       if (vAge[i] < oldest) { oldest = vAge[i]; idx = i; }
     }
   }
-
   const v: f32 = <f32>velocity / 127.0;
   vNote[idx] = note;
   vKeyDown[idx] = true;
   vAge[idx] = counter++;
-  vPhase[idx] = 0.0;
-  vInc[idx] = (TWO_PI * 440.0 * Math.pow(2.0, <f64>(note - 69) / 12.0)) / sampleRate;
+  vPos[idx] = 0;
   vEnv[idx] = 0.0;
-  vAmp[idx] = 0.25 * v * v;   // velocity -> volumen (curva cuadrática)
+  vAmp[idx] = 0.5 * v * v;
   vStage[idx] = 1;
 }
 
@@ -87,8 +79,7 @@ export function process(frames: i32): void {
     let stage = vStage[v];
     if (stage == 0) continue;
 
-    let phase = vPhase[v];
-    const inc = vInc[v];
+    let pos = vPos[v];
     let env = vEnv[v];
     const amp = vAmp[v];
 
@@ -96,22 +87,17 @@ export function process(frames: i32): void {
       if (stage == 1) {
         env += attackStep;
         if (env >= 1.0) { env = 1.0; stage = 2; }
-      } else if (stage == 2) {
-        env *= decayCoef;
-      } else {
+      } else if (stage == 3) {
         env *= releaseCoef;
       }
-
-      const s = <f32>(Math.sin(phase) + 0.3 * Math.sin(2.0 * phase));
-      outBuf[i] += s * env * amp;
-
-      phase += inc;
-      if (phase > TWO_PI) phase -= TWO_PI;
+      if (pos >= sampleLen) { stage = 0; break; } // el sample terminó
+      outBuf[i] += unchecked(sampleBuf[pos]) * env * amp;
+      pos++;
     }
 
-    if (stage == 3 && env < 0.0005) stage = 0;   // voz terminada
+    if (stage == 3 && env < 0.0005) stage = 0;
     vStage[v] = stage;
-    vPhase[v] = phase;
+    vPos[v] = pos;
     vEnv[v] = env;
   }
 }

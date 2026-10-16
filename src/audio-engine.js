@@ -70,4 +70,23 @@ async start() {
     const output = (this.ctx.outputLatency ?? 0) * 1000;
     return { base, output, total: base + output, sampleRate: this.ctx.sampleRate };
   }
+  async loadSample(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("No se pudo descargar " + url);
+  const arr = await res.arrayBuffer();
+
+  // El navegador decodifica el MP3 y lo ajusta a la frecuencia del AudioContext
+  const audioBuf = await this.ctx.decodeAudioData(arr);
+
+  // Mezcla a mono
+  const mono = new Float32Array(audioBuf.length);
+  for (let c = 0; c < audioBuf.numberOfChannels; c++) {
+    const data = audioBuf.getChannelData(c);
+    for (let i = 0; i < mono.length; i++) mono[i] += data[i] / audioBuf.numberOfChannels;
+  }
+
+  // Se transfiere (no se copia) al worklet
+  this.node.port.postMessage({ type: "sample", data: mono }, [mono.buffer]);
+  return { seconds: audioBuf.duration, sampleRate: audioBuf.sampleRate };
+}
 }
