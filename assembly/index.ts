@@ -7,7 +7,8 @@ const vStage = new StaticArray<i32>(MAX_VOICES);   // 0 libre, 1 ataque, 2 soste
 const vNote = new StaticArray<i32>(MAX_VOICES);
 const vKeyDown = new StaticArray<bool>(MAX_VOICES);
 const vAge = new StaticArray<i32>(MAX_VOICES);
-const vPos = new StaticArray<i32>(MAX_VOICES);     // posición de lectura en el sample
+const vPos = new StaticArray<f64>(MAX_VOICES);     // posición fraccionaria en el sample
+const vRate = new StaticArray<f64>(MAX_VOICES);    // velocidad de lectura (1.0 = C4 original)    // posición de lectura en el sample
 const vEnv = new StaticArray<f32>(MAX_VOICES);
 const vAmp = new StaticArray<f32>(MAX_VOICES);
 
@@ -47,7 +48,8 @@ export function noteOn(note: i32, velocity: i32): void {
   vNote[idx] = note;
   vKeyDown[idx] = true;
   vAge[idx] = counter++;
-  vPos[idx] = 0;
+  vPos[idx] = 0.0;
+  vRate[idx] = Math.pow(2.0, <f64>(note - 60) / 12.0);  // 60 = C4, la nota grabada
   vEnv[idx] = 0.0;
   vAmp[idx] = 0.5 * v * v;
   vStage[idx] = 1;
@@ -80,6 +82,7 @@ export function process(frames: i32): void {
     if (stage == 0) continue;
 
     let pos = vPos[v];
+    const rate = vRate[v];
     let env = vEnv[v];
     const amp = vAmp[v];
 
@@ -90,9 +93,17 @@ export function process(frames: i32): void {
       } else if (stage == 3) {
         env *= releaseCoef;
       }
-      if (pos >= sampleLen) { stage = 0; break; } // el sample terminó
-      outBuf[i] += unchecked(sampleBuf[pos]) * env * amp;
-      pos++;
+
+      const i0 = <i32>pos;
+      if (i0 + 1 >= sampleLen) { stage = 0; break; }   // el sample terminó
+
+      // Interpolación lineal entre dos muestras vecinas
+      const frac = <f32>(pos - <f64>i0);
+      const s0 = unchecked(sampleBuf[i0]);
+      const s1 = unchecked(sampleBuf[i0 + 1]);
+      outBuf[i] += (s0 + (s1 - s0) * frac) * env * amp;
+
+      pos += rate;
     }
 
     if (stage == 3 && env < 0.0005) stage = 0;
