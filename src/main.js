@@ -54,8 +54,8 @@ $("start").addEventListener("click", async () => {
   // El banco carga en segundo plano: ya puedes tocar cuando termina la primera capa
   engine
     .loadBank(`${import.meta.env.BASE_URL}samples/piano/`, {
-      onProgress: (n, total, layer) =>
-        ($("status").textContent = `Cargando piano (${layer})... ${n}/${total}`),
+      onProgress: (n, total, layer, fromCache) =>
+        ($("status").textContent = `${fromCache ? "Cargando desde almacenamiento local" : "Descargando"} piano (${layer})... ${n}/${total}`),
     })
     .then((info) => {
       $("status").textContent =

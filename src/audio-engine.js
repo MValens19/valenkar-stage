@@ -1,3 +1,5 @@
+import { getCachedSample, saveCachedSample } from "./sample-storage.js";
+
 export class AudioEngine {
   constructor() {
     this.ctx = null;
@@ -115,7 +117,7 @@ async loadBank(baseUrl, { onProgress } = {}) {
         name,
         layer: Number(name.slice(1)) - 1,
         midi: Number(midi),
-        file: file.replace(".wav", ".mp3"),
+        file: file,
       });
     }
   }
@@ -128,10 +130,20 @@ async loadBank(baseUrl, { onProgress } = {}) {
     const queue = jobs.filter((j) => j.name === name);
 
     const loadOne = async (j) => {
-      const r = await fetch(`${url}${j.file}`);
-      const rType = r.headers.get("content-type") || "";
-      if (!r.ok || rType.includes("text/html")) throw new Error("No se pudo descargar " + j.file);
-      const audioBuf = await this.ctx.decodeAudioData(await r.arrayBuffer());
+      let buf = await getCachedSample(j.file);
+      let fromCache = true;
+
+      if (!buf) {
+        fromCache = false;
+        const r = await fetch(`${url}${j.file}`);
+        const rType = r.headers.get("content-type") || "";
+        if (!r.ok || rType.includes("text/html")) throw new Error("No se pudo descargar " + j.file);
+        buf = await r.arrayBuffer();
+        // Guardar en el almacenamiento del dispositivo en segundo plano
+        saveCachedSample(j.file, buf).catch(() => {});
+      }
+
+      const audioBuf = await this.ctx.decodeAudioData(buf.slice(0));
 
       const mono = new Float32Array(audioBuf.length);
       const nch = audioBuf.numberOfChannels;
@@ -144,7 +156,7 @@ async loadBank(baseUrl, { onProgress } = {}) {
         { type: "sample", layer: j.layer, midi: j.midi, data: mono },
         [mono.buffer]
       );
-      onProgress?.(++done, total, name);
+      onProgress?.(++done, total, name, fromCache);
     };
 
     await Promise.all(
