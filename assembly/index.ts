@@ -1,57 +1,108 @@
-// Motor Wasm 3B: reproduce un sample (sin cambio de tono todavía).
 const MAX_VOICES: i32 = 32;
 const MAX_FRAMES: i32 = 1024;
-const MAX_SAMPLE: i32 = 48000 * 12; // hasta 12 s a 48 kHz (~2.3 MB)
+const LAYERS: i32 = 3;
 
-const vStage = new StaticArray<i32>(MAX_VOICES);   // 0 libre, 1 ataque, 2 sostenida, 3 release
+// Banco: índice = capa * 128 + nota MIDI
+const smpPtr = new StaticArray<usize>(LAYERS * 128);
+const smpLen = new StaticArray<i32>(LAYERS * 128);
+const mapRoot = new StaticArray<i32>(LAYERS * 128);   // tecla -> raíz más cercana (-1 si no hay)
+const layerMax = new StaticArray<i32>(LAYERS);        // velocity máximo de cada capa
+
+// Voces
+const vStage = new StaticArray<i32>(MAX_VOICES);      // 0 libre, 1 ataque, 2 sostenida, 3 release
 const vNote = new StaticArray<i32>(MAX_VOICES);
 const vKeyDown = new StaticArray<bool>(MAX_VOICES);
 const vAge = new StaticArray<i32>(MAX_VOICES);
-const vPos = new StaticArray<f64>(MAX_VOICES);     // posición fraccionaria en el sample
-const vRate = new StaticArray<f64>(MAX_VOICES);    // velocidad de lectura (1.0 = C4 original)    // posición de lectura en el sample
+const vPtr = new StaticArray<usize>(MAX_VOICES);
+const vLen = new StaticArray<i32>(MAX_VOICES);
+const vPos = new StaticArray<f64>(MAX_VOICES);
+const vRate = new StaticArray<f64>(MAX_VOICES);
 const vEnv = new StaticArray<f32>(MAX_VOICES);
 const vAmp = new StaticArray<f32>(MAX_VOICES);
 
 const outBuf = new StaticArray<f32>(MAX_FRAMES);
-const sampleBuf = new StaticArray<f32>(MAX_SAMPLE);
 
-let sampleLen: i32 = 0;
 let attackStep: f32 = 0.02;
 let releaseCoef: f32 = 0.999;
 let sustainDown: bool = false;
 let counter: i32 = 0;
 
 export function init(sr: f64): void {
-  attackStep = <f32>(1.0 / (0.001 * sr));           // ataque de 1 ms (anti-clic)
-  releaseCoef = <f32>Math.exp(-1.0 / (0.12 * sr));  // apagado ~120 ms
+  attackStep = <f32>(1.0 / (0.001 * sr));
+  releaseCoef = <f32>Math.exp(-1.0 / (0.12 * sr));
   sustainDown = false;
   for (let i = 0; i < MAX_VOICES; i++) vStage[i] = 0;
+  for (let i = 0; i < LAYERS * 128; i++) { smpLen[i] = 0; mapRoot[i] = -1; }
+  layerMax[0] = 42; layerMax[1] = 85; layerMax[2] = 127;
 }
 
 export function getOutPtr(): usize { return changetype<usize>(outBuf); }
-export function getSamplePtr(): usize { return changetype<usize>(sampleBuf); }
-export function getMaxSample(): i32 { return MAX_SAMPLE; }
-export function setSampleLength(n: i32): void { sampleLen = n; }
+
+export function setLayerMax(layer: i32, max: i32): void {
+  if (layer >= 0 && layer < LAYERS) layerMax[layer] = max;
+}
+
+export function allocSample(layer: i32, midi: i32, len: i32): usize {
+  const idx = layer * 128 + midi;
+  const ptr = heap.alloc(<usize>len << 2);
+  smpPtr[idx] = ptr;
+  smpLen[idx] = len;
+  return ptr;
+}
+
+// Para cada tecla de una capa, elige la raíz cargada más cercana
+export function buildMap(layer: i32): void {
+  const o = layer * 128;
+  for (let n = 0; n < 128; n++) {
+    let best: i32 = -1;
+    for (let d = 0; d < 128; d++) {
+      if (n - d >= 0 && smpLen[o + n - d] > 0) { best = n - d; break; }
+      if (n + d <= 127 && smpLen[o + n + d] > 0) { best = n + d; break; }
+    }
+    mapRoot[o + n] = best;
+  }
+}
+
+function pickLayer(velocity: i32): i32 {
+  let l: i32 = 0;
+  while (l < LAYERS - 1 && velocity > layerMax[l]) l++;
+  return l;
+}
 
 export function noteOn(note: i32, velocity: i32): void {
+  // Capa que corresponde al velocity; si aún no está cargada, usa la más cercana
+  const want = pickLayer(velocity);
+  let layer: i32 = -1;
+  for (let d = 0; d < LAYERS && layer < 0; d++) {
+    if (want + d < LAYERS && mapRoot[(want + d) * 128 + note] >= 0) layer = want + d;
+    else if (want - d >= 0 && mapRoot[(want - d) * 128 + note] >= 0) layer = want - d;
+  }
+  if (layer < 0) return;
+
+  const root = mapRoot[layer * 128 + note];
+  const si = layer * 128 + root;
+
   let idx: i32 = -1;
   for (let i = 0; i < MAX_VOICES; i++) {
     if (vStage[i] == 0) { idx = i; break; }
   }
-  if (idx < 0) { // voice stealing: la más antigua
+  if (idx < 0) {   // voice stealing: la más antigua
     let oldest: i32 = i32.MAX_VALUE;
     for (let i = 0; i < MAX_VOICES; i++) {
       if (vAge[i] < oldest) { oldest = vAge[i]; idx = i; }
     }
   }
+
   const v: f32 = <f32>velocity / 127.0;
   vNote[idx] = note;
   vKeyDown[idx] = true;
   vAge[idx] = counter++;
+  vPtr[idx] = smpPtr[si];
+  vLen[idx] = smpLen[si];
   vPos[idx] = 0.0;
-  vRate[idx] = Math.pow(2.0, <f64>(note - 60) / 12.0);  // 60 = C4, la nota grabada
+  vRate[idx] = Math.pow(2.0, <f64>(note - root) / 12.0);
   vEnv[idx] = 0.0;
-  vAmp[idx] = 0.5 * v * v;
+  vAmp[idx] = 0.6 * (0.35 + 0.65 * v);   // curva suave: las capas ya traen la dinámica
   vStage[idx] = 1;
 }
 
@@ -83,6 +134,8 @@ export function process(frames: i32): void {
 
     let pos = vPos[v];
     const rate = vRate[v];
+    const base = vPtr[v];
+    const len = vLen[v];
     let env = vEnv[v];
     const amp = vAmp[v];
 
@@ -95,12 +148,11 @@ export function process(frames: i32): void {
       }
 
       const i0 = <i32>pos;
-      if (i0 + 1 >= sampleLen) { stage = 0; break; }   // el sample terminó
+      if (i0 + 1 >= len) { stage = 0; break; }
 
-      // Interpolación lineal entre dos muestras vecinas
       const frac = <f32>(pos - <f64>i0);
-      const s0 = unchecked(sampleBuf[i0]);
-      const s1 = unchecked(sampleBuf[i0 + 1]);
+      const s0 = load<f32>(base + (<usize>i0 << 2));
+      const s1 = load<f32>(base + (<usize>(i0 + 1) << 2));
       outBuf[i] += (s0 + (s1 - s0) * frac) * env * amp;
 
       pos += rate;

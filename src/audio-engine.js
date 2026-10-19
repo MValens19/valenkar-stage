@@ -70,23 +70,91 @@ async start() {
     const output = (this.ctx.outputLatency ?? 0) * 1000;
     return { base, output, total: base + output, sampleRate: this.ctx.sampleRate };
   }
-  async loadSample(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("No se pudo descargar " + url);
-  const arr = await res.arrayBuffer();
+async loadBank(baseUrl, { onProgress } = {}) {
+  let url = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+  let res = await fetch(`${url}manifest.json`);
+  let contentType = res.headers.get("content-type") || "";
 
-  // El navegador decodifica el MP3 y lo ajusta a la frecuencia del AudioContext
-  const audioBuf = await this.ctx.decodeAudioData(arr);
-
-  // Mezcla a mono
-  const mono = new Float32Array(audioBuf.length);
-  for (let c = 0; c < audioBuf.numberOfChannels; c++) {
-    const data = audioBuf.getChannelData(c);
-    for (let i = 0; i < mono.length; i++) mono[i] += data[i] / audioBuf.numberOfChannels;
+  // Si no se encuentra en la ruta directa, probar subcarpeta piano/
+  if ((!res.ok || contentType.includes("text/html")) && !url.endsWith("piano/")) {
+    const fallbackUrl = `${url}piano/`;
+    const fallbackRes = await fetch(`${fallbackUrl}manifest.json`);
+    const fallbackContentType = fallbackRes.headers.get("content-type") || "";
+    if (fallbackRes.ok && !fallbackContentType.includes("text/html")) {
+      url = fallbackUrl;
+      res = fallbackRes;
+      contentType = fallbackContentType;
+    }
   }
 
-  // Se transfiere (no se copia) al worklet
-  this.node.port.postMessage({ type: "sample", data: mono }, [mono.buffer]);
-  return { seconds: audioBuf.duration, sampleRate: audioBuf.sampleRate };
+  if (!res.ok || contentType.includes("text/html")) {
+    throw new Error("No se encontró manifest.json en " + url);
+  }
+  const manifest = await res.json();
+  if (!manifest.capas) throw new Error("El manifest no tiene 'capas'.");
+
+  // Rango de velocity de cada capa, tomado de tu manifest
+  for (const [name, c] of Object.entries(manifest.capas)) {
+    this.node.port.postMessage({
+      type: "layerMax",
+      layer: Number(name.slice(1)) - 1,
+      max: c.velocity[1],
+    });
+  }
+
+  // Cuántas capas cargar: ?capas=1|2|3 en la URL, o según la RAM del equipo
+  const param = Number(new URLSearchParams(location.search).get("capas"));
+  const mem = navigator.deviceMemory ?? 4;
+  const count = param >= 1 && param <= 3 ? param : mem >= 6 ? 3 : 1;
+  const order = ["v2", "v1", "v3"].slice(0, count).filter((n) => manifest.capas[n]);
+
+  const jobs = [];
+  for (const name of order) {
+    for (const [midi, file] of Object.entries(manifest.capas[name].muestras)) {
+      jobs.push({
+        name,
+        layer: Number(name.slice(1)) - 1,
+        midi: Number(midi),
+        file: file.replace(".wav", ".mp3"),
+      });
+    }
+  }
+
+  let done = 0;
+  let seconds = 0;
+  const total = jobs.length;
+
+  for (const name of order) {   // una capa a la vez: v2 primero, ya se puede tocar
+    const queue = jobs.filter((j) => j.name === name);
+
+    const loadOne = async (j) => {
+      const r = await fetch(`${url}${j.file}`);
+      const rType = r.headers.get("content-type") || "";
+      if (!r.ok || rType.includes("text/html")) throw new Error("No se pudo descargar " + j.file);
+      const audioBuf = await this.ctx.decodeAudioData(await r.arrayBuffer());
+
+      const mono = new Float32Array(audioBuf.length);
+      const nch = audioBuf.numberOfChannels;
+      for (let c = 0; c < nch; c++) {
+        const d = audioBuf.getChannelData(c);
+        for (let i = 0; i < mono.length; i++) mono[i] += d[i] / nch;
+      }
+      seconds += audioBuf.duration;
+      this.node.port.postMessage(
+        { type: "sample", layer: j.layer, midi: j.midi, data: mono },
+        [mono.buffer]
+      );
+      onProgress?.(++done, total, name);
+    };
+
+    await Promise.all(
+      Array.from({ length: 4 }, async () => {
+        while (queue.length) await loadOne(queue.shift());
+      })
+    );
+    this.node.port.postMessage({ type: "buildMap", layer: Number(name.slice(1)) - 1 });
+  }
+
+  return { count: total, seconds, layers: order };
 }
 }

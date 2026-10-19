@@ -13,14 +13,17 @@ class PianoProcessor extends AudioWorkletProcessor {
     this.view = null;
 
 this.port.onmessage = ({ data: msg }) => {
-  if (msg.type === "noteOn") this.wasm.noteOn(msg.note, msg.velocity);
-  else if (msg.type === "noteOff") this.wasm.noteOff(msg.note);
-  else if (msg.type === "sustain") this.wasm.setSustain(msg.down ? 1 : 0);
-  else if (msg.type === "sample") {
-    const n = Math.min(msg.data.length, this.wasm.getMaxSample());
-    const ptr = this.wasm.getSamplePtr();
-    new Float32Array(this.wasm.memory.buffer, ptr, n).set(msg.data.subarray(0, n));
-    this.wasm.setSampleLength(n);
+  switch (msg.type) {
+    case "noteOn": this.wasm.noteOn(msg.note, msg.velocity); break;
+    case "noteOff": this.wasm.noteOff(msg.note); break;
+    case "sustain": this.wasm.setSustain(msg.down ? 1 : 0); break;
+    case "layerMax": this.wasm.setLayerMax(msg.layer, msg.max); break;
+    case "sample": {
+      const ptr = this.wasm.allocSample(msg.layer, msg.midi, msg.data.length);
+      new Float32Array(this.wasm.memory.buffer, ptr, msg.data.length).set(msg.data);
+      break;
+    }
+    case "buildMap": this.wasm.buildMap(msg.layer); break;
   }
 };
   }

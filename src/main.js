@@ -42,28 +42,34 @@ function showLatency() {
 $("volume").addEventListener("input", (e) => engine.setVolume(Number(e.target.value)));
 
 $("start").addEventListener("click", async () => {
-  // 1) Audio (debe iniciarse con un gesto del usuario)
   try {
     await engine.start();
-    const info = await engine.loadSample(`${import.meta.env.BASE_URL}samples/C4.mp3`);
-$("status").textContent = `Audio listo. Sample C4 cargado (${info.seconds.toFixed(1)} s). `;
-  
     showLatency();
-    setInterval(showLatency, 2000); // outputLatency puede cambiar
+    setInterval(showLatency, 2000);
   } catch (err) {
     $("status").textContent = "Error de audio: " + err.message;
     return;
   }
 
-  // 2) MIDI (si falla, el teclado virtual sigue funcionando)
-  const access = await initMIDI({
+  // El banco carga en segundo plano: ya puedes tocar cuando termina la primera capa
+  engine
+    .loadBank(`${import.meta.env.BASE_URL}samples/piano/`, {
+      onProgress: (n, total, layer) =>
+        ($("status").textContent = `Cargando piano (${layer})... ${n}/${total}`),
+    })
+    .then((info) => {
+      $("status").textContent =
+        `Piano listo: capas ${info.layers.join(", ")}, ${info.count} samples (${info.seconds.toFixed(0)} s de audio).`;
+    })
+    .catch((err) => ($("status").textContent = "Error: " + err.message));
+
+  await initMIDI({
     ...handlers,
     onDevices: (names) => {
       $("devices").textContent = names.length
         ? "Dispositivos: " + names.join(", ")
         : "No se detecta ningún dispositivo MIDI (puedes usar el teclado virtual)";
     },
-    onError: (msg) => ($("status").textContent += msg),
+    onError: (msg) => ($("devices").textContent = msg),
   });
-  if (access) $("status").textContent += "MIDI listo.";
 });
