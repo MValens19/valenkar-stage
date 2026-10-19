@@ -29,7 +29,7 @@ const handlers = {
   },
 };
 
-createVirtualKeyboard($("keyboard"), { ...handlers, startNote: 48, octaves: 3 });
+createVirtualKeyboard($("keyboard"), { ...handlers, startNote: 60, octaves: 3 });
 
 function showLatency() {
   const l = engine.getLatency();

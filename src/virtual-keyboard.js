@@ -11,7 +11,7 @@ export function createVirtualKeyboard(container, { onNoteOn, onNoteOff, startNot
     if (el.dataset.down) return;
     el.dataset.down = "1";
     el.style.filter = "brightness(0.7)";
-    onNoteOn({ note, velocity: 100, channel: 0 });
+    onNoteOn({ note, velocity: 127, channel: 0 });
   }
   function release(note, el) {
     if (!el.dataset.down) return;
