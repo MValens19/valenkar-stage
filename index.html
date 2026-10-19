@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebStage Core</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #111; color: #eee; margin: 0; padding: 16px; }
+    button { font-size: 1.1rem; padding: 12px 20px; border-radius: 8px; border: 0; background: #4f8cff; color: #fff; }
+    #status { margin: 16px 0; color: #9ad; }
+    #devices { margin: 8px 0; }
+    #log { font-family: monospace; font-size: 0.9rem; max-height: 60vh; overflow-y: auto; }
+    .on { color: #6f6; } .off { color: #f88; } .cc { color: #fc6; }
+  </style>
+</head>
+<body>
+  <h1>WebStage Core · Fase 2: Audio</h1>
+  <button id="start">Iniciar audio y MIDI</button>
+  <div id="status"></div>
+  <div id="devices"></div>
+
+  <label>Volumen
+    <input id="volume" type="range" min="0" max="1" step="0.01" value="0.7" />
+  </label>
+  <div id="latency">Latencia: (inicia el audio)</div>
+
+  <div id="keyboard"></div>
+  <div id="log"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

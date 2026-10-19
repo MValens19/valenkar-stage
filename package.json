@@ -1,0 +1,17 @@
+{
+  "name": "valenkar-stage",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "asbuild": "asc assembly/index.ts --target release",
+    "predev": "npm run asbuild",
+    "dev": "vite",
+    "prebuild": "npm run asbuild",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.28.0",
+    "vite": "^7.0.0"
+  }
+}
