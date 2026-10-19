@@ -1,0 +1,12 @@
+[
+  {
+    "id": "piano",
+    "name": "Piano",
+    "path": "library/piano/piano.sfz"
+  },
+  {
+    "id": "kamoepiano",
+    "name": "Kamoepiano",
+    "path": "library/kamoepiano/kamoepiano.sfz"
+  }
+]

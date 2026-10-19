@@ -5,10 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WebStage Core</title>
   <style>body{color:#eee;background:#111;margin:0;padding:16px;font-family:system-ui,sans-serif}button{color:#fff;background:#4f8cff;border:0;border-radius:8px;padding:12px 20px;font-size:1.1rem}#status{color:#9ad;margin:16px 0}#devices{margin:8px 0}#log{max-height:60vh;font-family:monospace;font-size:.9rem;overflow-y:auto}.on{color:#6f6}.off{color:#f88}.cc{color:#fc6}</style>
-  <script type="module" crossorigin src="./assets/index-DeqHb6Fw.js"></script>
+  <script type="module" crossorigin src="./assets/index-BNBLSSQo.js"></script>
 </head>
 <body>
   <h1>WebStage Core · Fase 2: Audio</h1>
+
+  <div style="margin: 16px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+    <label for="instrument-select"><strong>Instrumento (SFZ):</strong></label>
+    <select id="instrument-select" style="font-size: 1rem; padding: 8px 12px; border-radius: 6px; background: #222; color: #fff; border: 1px solid #444; cursor: pointer;">
+      <option value="library/piano/piano.sfz">Cargando catálogo...</option>
+    </select>
+  </div>
+
   <button id="start">Iniciar audio y MIDI</button>
   <div id="status"></div>
   <div id="devices"></div>

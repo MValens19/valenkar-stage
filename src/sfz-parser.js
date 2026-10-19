@@ -45,10 +45,20 @@ export function parseSFZ(sfzText) {
         }
       } else {
         // Pares de opcode=valor
-        const pairs = token.match(/([a-zA-Z0-9_]+)=([^\s=]+)/g);
+        // Usamos un regex que capture el valor completo incluyendo #, +, etc.
+        // Primero manejar 'sample=' por separado ya que el valor puede tener '#'
+        const sampleMatch = token.match(/(?:^|\s)sample=([^\s]+)/i);
+        if (sampleMatch && currentRegion) {
+          currentRegion.opcodes["sample"] = sampleMatch[1];
+        }
+
+        // Luego el resto de opcodes numéricos y de texto simple (sin # en valores)
+        const pairs = token.replace(/sample=[^\s]+/i, "").match(/([a-zA-Z0-9_]+)=([^\s=]+)/g);
         if (pairs) {
           for (let pair of pairs) {
-            const [key, val] = pair.split("=");
+            const eqIdx = pair.indexOf("=");
+            const key = pair.slice(0, eqIdx);
+            const val = pair.slice(eqIdx + 1);
             const numVal = Number(val);
             const finalVal = isNaN(numVal) ? val : numVal;
 
@@ -56,7 +66,7 @@ export function parseSFZ(sfzText) {
               result.global[key] = finalVal;
             } else if (currentHeader === "group" && currentGroup && !currentRegion) {
               currentGroup.opcodes[key] = finalVal;
-            } else if (currentRegion) {
+            } else if (currentRegion && key !== "sample") {
               currentRegion.opcodes[key] = finalVal;
             }
           }

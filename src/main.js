@@ -41,6 +41,52 @@ function showLatency() {
 
 $("volume").addEventListener("input", (e) => engine.setVolume(Number(e.target.value)));
 
+let currentInstrumentPath = "library/piano/piano.sfz";
+
+async function populateLibraryMenu() {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}library/index.json`);
+    if (!res.ok) return;
+    const list = await res.json();
+    if (!Array.isArray(list) || list.length === 0) return;
+
+    $("instrument-select").innerHTML = "";
+    list.forEach((item) => {
+      const opt = document.createElement("option");
+      opt.value = item.path;
+      opt.textContent = item.name;
+      $("instrument-select").appendChild(opt);
+    });
+    currentInstrumentPath = $("instrument-select").value;
+  } catch (err) {
+    console.warn("No se pudo cargar el catálogo de librerías:", err);
+  }
+}
+
+populateLibraryMenu();
+
+$("instrument-select").addEventListener("change", (e) => {
+  currentInstrumentPath = e.target.value;
+  if (engine.ready) {
+    loadCurrentInstrument();
+  }
+});
+
+async function loadCurrentInstrument() {
+  const name = $("instrument-select").options[$("instrument-select").selectedIndex]?.textContent || "Instrumento";
+  $("status").textContent = `Cargando ${name}...`;
+  try {
+    const info = await engine.loadSFZ(`${import.meta.env.BASE_URL}${currentInstrumentPath}`, {
+      onProgress: (n, total, layer, fromCache) =>
+        ($("status").textContent = `${fromCache ? "Cargando desde almacenamiento local" : "Descargando"} ${name} (${layer})... ${n}/${total}`),
+    });
+    $("status").textContent =
+      `${name} listo: capas ${info.layers.join(", ")}, ${info.count} samples (${info.seconds.toFixed(0)} s de audio).`;
+  } catch (err) {
+    $("status").textContent = "Error: " + err.message;
+  }
+}
+
 $("start").addEventListener("click", async () => {
   try {
     await engine.start();
@@ -51,17 +97,8 @@ $("start").addEventListener("click", async () => {
     return;
   }
 
-  // El banco carga en segundo plano: ya puedes tocar cuando termina la primera capa
-  engine
-    .loadSFZ(`${import.meta.env.BASE_URL}library/piano/piano.sfz`, {
-      onProgress: (n, total, layer, fromCache) =>
-        ($("status").textContent = `${fromCache ? "Cargando desde almacenamiento local" : "Descargando"} piano (${layer})... ${n}/${total}`),
-    })
-    .then((info) => {
-      $("status").textContent =
-        `Piano listo: capas ${info.layers.join(", ")}, ${info.count} samples (${info.seconds.toFixed(0)} s de audio).`;
-    })
-    .catch((err) => ($("status").textContent = "Error: " + err.message));
+  // Cargar el instrumento seleccionado actualmente
+  loadCurrentInstrument();
 
   await initMIDI({
     ...handlers,

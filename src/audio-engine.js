@@ -84,11 +84,17 @@ async start() {
     const parsed = parseSFZ(sfzText);
     const baseUrl = sfzUrl.substring(0, sfzUrl.lastIndexOf("/") + 1);
 
+    // Reiniciar banco en WebAssembly para limpiar instrumento anterior
+    this.node.port.postMessage({ type: "reset" });
+
     parsed.groups.forEach((g, idx) => {
+      const label = String(g.opcodes.group_label ?? "");
+      const labeledLayer = label.match(/^v([1-3])$/i);
+      const layer = labeledLayer ? Number(labeledLayer[1]) - 1 : idx;
       const maxVel = g.opcodes.hivel ?? 127;
       this.node.port.postMessage({
         type: "layerMax",
-        layer: idx,
+        layer,
         max: maxVel,
       });
     });
@@ -97,20 +103,35 @@ async start() {
     const mem = navigator.deviceMemory ?? 4;
     const count = param >= 1 && param <= 3 ? param : mem >= 6 ? 3 : 1;
     const groupsToLoad = parsed.groups.slice(0, count);
+    const groupLayers = groupsToLoad.map((group, index) => {
+      const match = String(group.opcodes.group_label ?? "").match(/^v([1-3])$/i);
+      return match ? Number(match[1]) - 1 : index;
+    });
 
     const jobs = [];
     groupsToLoad.forEach((g, gIdx) => {
+      const layer = groupLayers[gIdx];
       for (const r of g.regions) {
         const file = r.opcodes.sample;
-        const midi = r.opcodes.pitch_keycenter ?? r.opcodes.key;
-        if (file && midi !== undefined) {
-          jobs.push({
-            layer: gIdx,
-            midi,
-            file,
-            layerName: g.opcodes.group_label || `v${gIdx + 1}`,
-          });
+        if (!file) continue;
+        const midi = Number(r.opcodes.pitch_keycenter ?? r.opcodes.key);
+        if (!Number.isInteger(midi) || midi < 0 || midi > 127) {
+          throw new Error(`Nota raíz inválida para el sample "${file}" en el SFZ.`);
         }
+        const numericOpcode = (value, fallback) => {
+          const number = Number(value);
+          return Number.isInteger(number) && number >= 0 && number <= 127 ? number : fallback;
+        };
+        jobs.push({
+          layer,
+          midi,
+          file,
+          lokey: numericOpcode(r.opcodes.lokey, -1),
+          hikey: numericOpcode(r.opcodes.hikey, -1),
+          lovel: numericOpcode(r.opcodes.lovel ?? g.opcodes.lovel, 1),
+          hivel: numericOpcode(r.opcodes.hivel ?? g.opcodes.hivel, 127),
+          layerName: g.opcodes.group_label || `v${gIdx + 1}`,
+        });
       }
     });
 
@@ -119,20 +140,26 @@ async start() {
     const total = jobs.length;
 
     for (let gIdx = 0; gIdx < groupsToLoad.length; gIdx++) {
-      const queue = jobs.filter((j) => j.layer === gIdx);
+      const layer = groupLayers[gIdx];
+      const queue = jobs.filter((j) => j.layer === layer);
       const layerName = groupsToLoad[gIdx].opcodes.group_label || `v${gIdx + 1}`;
 
       const loadOne = async (j) => {
-        let buf = await getCachedSample(j.file);
+        // Usar el nombre de archivo como clave de caché
+        const cacheKey = j.file;
+        let buf = await getCachedSample(cacheKey);
         let fromCache = true;
 
         if (!buf) {
           fromCache = false;
-          const r = await fetch(`${baseUrl}${j.file}`);
+          // Codificar el nombre del archivo para manejar '#', '+', '?' y otros
+          // caracteres especiales en URLs (ej: p_d#1.flac -> p_d%231.flac)
+          const encodedFile = j.file.split("/").map(encodeURIComponent).join("/");
+          const r = await fetch(`${baseUrl}${encodedFile}`);
           const rType = r.headers.get("content-type") || "";
           if (!r.ok || rType.includes("text/html")) throw new Error("No se pudo descargar " + j.file);
           buf = await r.arrayBuffer();
-          saveCachedSample(j.file, buf).catch(() => {});
+          saveCachedSample(cacheKey, buf).catch(() => {});
         }
 
         const audioBuf = await this.ctx.decodeAudioData(buf.slice(0));
@@ -144,7 +171,16 @@ async start() {
         }
         seconds += audioBuf.duration;
         this.node.port.postMessage(
-          { type: "sample", layer: j.layer, midi: j.midi, data: mono },
+          {
+            type: "sample",
+            layer: j.layer,
+            midi: j.midi,
+            lokey: j.lokey,
+            hikey: j.hikey,
+            lovel: j.lovel,
+            hivel: j.hivel,
+            data: mono,
+          },
           [mono.buffer]
         );
         onProgress?.(++done, total, layerName, fromCache);
@@ -155,7 +191,7 @@ async start() {
           while (queue.length) await loadOne(queue.shift());
         })
       );
-      this.node.port.postMessage({ type: "buildMap", layer: gIdx });
+      this.node.port.postMessage({ type: "buildMap", layer });
     }
 
     return {

@@ -21,9 +21,18 @@ this.port.onmessage = ({ data: msg }) => {
     case "sample": {
       const ptr = this.wasm.allocSample(msg.layer, msg.midi, msg.data.length);
       new Float32Array(this.wasm.memory.buffer, ptr, msg.data.length).set(msg.data);
+      this.wasm.setSampleZone(
+        msg.layer,
+        msg.midi,
+        msg.lokey,
+        msg.hikey,
+        msg.lovel,
+        msg.hivel
+      );
       break;
     }
     case "buildMap": this.wasm.buildMap(msg.layer); break;
+    case "reset": this.wasm.init(sampleRate); break;
   }
 };
   }

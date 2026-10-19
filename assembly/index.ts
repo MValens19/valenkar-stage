@@ -5,7 +5,13 @@ const LAYERS: i32 = 3;
 // Banco: índice = capa * 128 + nota MIDI
 const smpPtr = new StaticArray<usize>(LAYERS * 128);
 const smpLen = new StaticArray<i32>(LAYERS * 128);
+const smpLowKey = new StaticArray<i32>(LAYERS * 128);
+const smpHighKey = new StaticArray<i32>(LAYERS * 128);
+const smpLowVel = new StaticArray<i32>(LAYERS * 128);
+const smpHighVel = new StaticArray<i32>(LAYERS * 128);
 const mapRoot = new StaticArray<i32>(LAYERS * 128);   // tecla -> raíz más cercana (-1 si no hay)
+const mapLowVel = new StaticArray<i32>(LAYERS * 128);
+const mapHighVel = new StaticArray<i32>(LAYERS * 128);
 const layerMax = new StaticArray<i32>(LAYERS);        // velocity máximo de cada capa
 
 // Voces
@@ -32,7 +38,16 @@ export function init(sr: f64): void {
   releaseCoef = <f32>Math.exp(-1.0 / (0.12 * sr));
   sustainDown = false;
   for (let i = 0; i < MAX_VOICES; i++) vStage[i] = 0;
-  for (let i = 0; i < LAYERS * 128; i++) { smpLen[i] = 0; mapRoot[i] = -1; }
+  for (let i = 0; i < LAYERS * 128; i++) {
+    smpLen[i] = 0;
+    smpLowKey[i] = -1;
+    smpHighKey[i] = -1;
+    smpLowVel[i] = 1;
+    smpHighVel[i] = 127;
+    mapRoot[i] = -1;
+    mapLowVel[i] = 1;
+    mapHighVel[i] = 127;
+  }
   layerMax[0] = 42; layerMax[1] = 85; layerMax[2] = 127;
 }
 
@@ -43,6 +58,7 @@ export function setLayerMax(layer: i32, max: i32): void {
 }
 
 export function allocSample(layer: i32, midi: i32, len: i32): usize {
+  if (layer < 0 || layer >= LAYERS || midi < 0 || midi > 127 || len <= 0) return 0;
   const idx = layer * 128 + midi;
   const ptr = heap.alloc(<usize>len << 2);
   smpPtr[idx] = ptr;
@@ -50,16 +66,51 @@ export function allocSample(layer: i32, midi: i32, len: i32): usize {
   return ptr;
 }
 
+export function setSampleZone(
+  layer: i32,
+  midi: i32,
+  lokey: i32,
+  hikey: i32,
+  lovel: i32,
+  hivel: i32,
+): void {
+  if (layer < 0 || layer >= LAYERS || midi < 0 || midi > 127) return;
+  const idx = layer * 128 + midi;
+  smpLowKey[idx] = lokey >= 0 && lokey <= 127 ? lokey : -1;
+  smpHighKey[idx] = hikey >= 0 && hikey <= 127 ? hikey : -1;
+  smpLowVel[idx] = lovel >= 1 && lovel <= 127 ? lovel : 1;
+  smpHighVel[idx] = hivel >= 1 && hivel <= 127 ? hivel : 127;
+}
+
 // Para cada tecla de una capa, elige la raíz cargada más cercana
 export function buildMap(layer: i32): void {
+  if (layer < 0 || layer >= LAYERS) return;
   const o = layer * 128;
   for (let n = 0; n < 128; n++) {
     let best: i32 = -1;
-    for (let d = 0; d < 128; d++) {
-      if (n - d >= 0 && smpLen[o + n - d] > 0) { best = n - d; break; }
-      if (n + d <= 127 && smpLen[o + n + d] > 0) { best = n + d; break; }
+    for (let root = 0; root < 128; root++) {
+      if (
+        smpLen[o + root] > 0 &&
+        smpLowKey[o + root] >= 0 &&
+        smpHighKey[o + root] >= smpLowKey[o + root] &&
+        n >= smpLowKey[o + root] &&
+        n <= smpHighKey[o + root]
+      ) {
+        best = root;
+        break;
+      }
+    }
+    if (best < 0) {
+      for (let d = 0; d < 128; d++) {
+        if (n - d >= 0 && smpLen[o + n - d] > 0) { best = n - d; break; }
+        if (n + d <= 127 && smpLen[o + n + d] > 0) { best = n + d; break; }
+      }
     }
     mapRoot[o + n] = best;
+    if (best >= 0) {
+      mapLowVel[o + n] = smpLowVel[o + best];
+      mapHighVel[o + n] = smpHighVel[o + best];
+    }
   }
 }
 
@@ -70,12 +121,27 @@ function pickLayer(velocity: i32): i32 {
 }
 
 export function noteOn(note: i32, velocity: i32): void {
-  // Capa que corresponde al velocity; si aún no está cargada, usa la más cercana
-  const want = pickLayer(velocity);
+  if (note < 0 || note > 127 || velocity <= 0 || velocity > 127) return;
+
   let layer: i32 = -1;
-  for (let d = 0; d < LAYERS && layer < 0; d++) {
-    if (want + d < LAYERS && mapRoot[(want + d) * 128 + note] >= 0) layer = want + d;
-    else if (want - d >= 0 && mapRoot[(want - d) * 128 + note] >= 0) layer = want - d;
+  for (let candidate = 0; candidate < LAYERS; candidate++) {
+    const mapIdx = candidate * 128 + note;
+    if (
+      mapRoot[mapIdx] >= 0 &&
+      velocity >= mapLowVel[mapIdx] &&
+      velocity <= mapHighVel[mapIdx]
+    ) {
+      layer = candidate;
+      break;
+    }
+  }
+  if (layer < 0) {
+    // Si falta una capa, conservar una respuesta usable con la más cercana disponible.
+    const want = pickLayer(velocity);
+    for (let d = 0; d < LAYERS && layer < 0; d++) {
+      if (want + d < LAYERS && mapRoot[(want + d) * 128 + note] >= 0) layer = want + d;
+      else if (want - d >= 0 && mapRoot[(want - d) * 128 + note] >= 0) layer = want - d;
+    }
   }
   if (layer < 0) return;
 

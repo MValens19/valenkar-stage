@@ -1,0 +1,131 @@
+================================================================================
+GUIA: COMO IMPORTAR Y GENERAR NUEVAS LIBRERIAS DE SAMPLES (SFZ)
+Valenkar Stage - WebStage Core
+================================================================================
+
+Esta guia explica el procedimiento estandar para agregar cualquier instrumento 
+(pianos, sintes, bajos, cuerdas, pads, guitarras, etc.) a tu plataforma.
+
+--------------------------------------------------------------------------------
+1. ESTRUCTURA DE CARPETAS
+--------------------------------------------------------------------------------
+Cada instrumento debe tener su propia subcarpeta dentro de "public/library/":
+
+public/
+  library/
+    COMO_IMPORTAR_SAMPLES.txt     <-- Este archivo de ayuda
+    piano/                        <-- Instrumento 1
+      piano.sfz
+      A0_v1.flac ...
+    rhodes/                       <-- Instrumento 2 (ejemplo)
+      rhodes.sfz
+      C3_v1.flac ...
+    bajo/                         <-- Instrumento 3 (ejemplo)
+      bajo.sfz
+      E1_v1.flac ...
+
+
+--------------------------------------------------------------------------------
+2. CONVENCION DE NOMBRES DE LOS AUDIOS
+--------------------------------------------------------------------------------
+El formato recomendado para los archivos de audio es:
+
+       <Nota><Octava>_v<Capa>.<extension>
+
+Ejemplos validos:
+  - C4_v1.flac    -> Do 4, capa suave (v1)
+  - C4_v2.flac    -> Do 4, capa media (v2)
+  - C4_v3.flac    -> Do 4, capa fuerte (v3)
+  - Fs3_v2.flac   -> Fa sostenido 3, capa media (v2)
+  - Bb2_v1.flac   -> Si bemol 2, capa suave (v1)
+  - Ds1_v3.wav    -> Re sostenido 1, capa fuerte (v3)
+
+Si tus samples tienen nombres Pianobook, el generador tambien los acepta y
+renombra automaticamente los archivos al formato recomendado:
+  - p_c4.flac o pianissimo_c4.flac -> C4_v1.flac
+  - mf_c4.flac o mezzo-forte_c4.flac -> C4_v2.flac
+  - f_c4.flac o fortissimo_c4.flac -> C4_v3.flac
+  - p_lc_a3.flac -> A3_v1.flac
+
+El SFZ y el manifest apuntaran a los nombres normalizados. Si dos archivos
+terminan representando la misma nota, capa y extension, el generador detendra
+el proceso para evitar sobrescribir una muestra. Si hay varios SFZ fuente en
+la carpeta, se prefiere el unico que no tenga el nombre del archivo de salida;
+si no existe, se usa el archivo de salida. Deja solo un SFZ fuente aparte del
+archivo de salida para evitar elegir un mapeo ambiguo.
+
+Nombres de notas aceptados:
+  - Naturales:  C, D, E, F, G, A, B
+  - Sostenidos: Cs (o C#), Ds (D#), Fs (F#), Gs (G#), As (A#)
+  - Bemoles:    Db, Eb, Gb, Ab, Bb
+
+Capas de dinamica (Velocity):
+  - v1 = Toque suave (Piano / pp)
+  - v2 = Toque medio (Mezzo-forte / mf)
+  - v3 = Toque fuerte (Forte / ff)
+  * Si tu instrumento solo tiene 1 capa, nombralos todos con "_v1".
+
+Si la carpeta incluye su SFZ original, el generador usa ese archivo para
+conservar por sample los rangos de teclado (key/lokey/hikey) y de velocity
+(lovel/hivel), incluyendo macros #define. Las notas del SFZ deben coincidir con
+la nota indicada por cada nombre de sample. El generador detiene el proceso si
+hay referencias o equivalencias inconsistentes.
+
+En el SFZ original de Kamoepiano, los rangos generales son p=1-45, mf=46-104
+y f=105-127; algunas notas tienen limites propios, que tambien se conservan.
+Sin SFZ original, el generador calcula las zonas de teclado y usa los rangos
+genericos de velocity.
+
+
+--------------------------------------------------------------------------------
+3. ¿HACE FALTA GRABAR TODAS LAS TECLAS?
+--------------------------------------------------------------------------------
+NO. Para la web y movil NO es necesario grabar las 88 teclas:
+  - Lo ideal es muestrear cada 3 semitonos (ej: C, D#, F#, A).
+  - Para sintes o pads, puedes muestrear solo 1 nota por octava (ej: C1, C2, C3, C4...).
+  - El generador y el motor de WebAssembly calculan los semitonos intermedios 
+    automaticamente con interpolacion de pitch sin perdida audible.
+
+
+--------------------------------------------------------------------------------
+4. FORMATO DE AUDIO RECOMENDADO
+--------------------------------------------------------------------------------
+  - FLAC (.flac): RECOMENDADO. Calidad 100% identica a WAV (sin perdida) y pesa 
+    50% menos. Todos los navegadores modernos lo leen de forma nativa.
+  - WAV (.wav):   Funciona perfecto, pero pesa el doble de megabytes.
+  - MP3 (.mp3):   Funciona, pero degrada los transitorios de ataque del instrumento.
+
+
+--------------------------------------------------------------------------------
+5. COMANDO PARA GENERAR EL SFZ AUTOMATICAMENTE
+--------------------------------------------------------------------------------
+Una vez colocados los archivos de audio dentro de su carpeta, abre una terminal 
+en la raiz del proyecto y ejecuta:
+
+  npm run sfz:generate public/library/<nombre-carpeta> <nombre-archivo>
+
+Ejemplo para un piano electrico en la carpeta "rhodes":
+  npm run sfz:generate public/library/rhodes rhodes
+
+Esto creara en un segundo:
+  1. public/library/rhodes/rhodes.sfz   (Mapeo estandar listo)
+  2. public/library/rhodes/manifest.json (Copia sincronizada)
+
+
+--------------------------------------------------------------------------------
+6. COMO CARGAR EL NUEVO INSTRUMENTO EN TU CODIGO
+--------------------------------------------------------------------------------
+En "src/main.js" simplemente cambias la ruta de carga:
+
+  engine.loadSFZ(`${import.meta.env.BASE_URL}library/rhodes/rhodes.sfz`, {
+    onProgress: (n, total, layer, fromCache) => {
+      console.log(`Cargando ${layer}... ${n}/${total}`);
+    }
+  });
+
+El sistema se encargara automaticamente de:
+  - Leer las capas y notas del archivo .sfz.
+  - Guardar los samples en la memoria local del movil (IndexedDB) para que 
+    la proxima vez cargue al instante y funcione sin internet.
+  - Configurar las voces polifonicas en el hilo de WebAssembly.
+================================================================================
