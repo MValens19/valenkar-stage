@@ -8,7 +8,8 @@
     "predev": "npm run asbuild",
     "dev": "vite",
     "prebuild": "npm run asbuild",
-    "build": "vite build"
+    "build": "vite build",
+    "sfz:generate": "node scripts/generate-sfz.js"
   },
   "devDependencies": {
     "assemblyscript": "^0.28.0",

@@ -1,4 +1,5 @@
 import { getCachedSample, saveCachedSample } from "./sample-storage.js";
+import { parseSFZ } from "./sfz-parser.js";
 
 export class AudioEngine {
   constructor() {
@@ -72,28 +73,134 @@ async start() {
     const output = (this.ctx.outputLatency ?? 0) * 1000;
     return { base, output, total: base + output, sampleRate: this.ctx.sampleRate };
   }
-async loadBank(baseUrl, { onProgress } = {}) {
-  let url = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
-  let res = await fetch(`${url}manifest.json`);
-  let contentType = res.headers.get("content-type") || "";
 
-  // Si no se encuentra en la ruta directa, probar subcarpeta piano/
-  if ((!res.ok || contentType.includes("text/html")) && !url.endsWith("piano/")) {
-    const fallbackUrl = `${url}piano/`;
-    const fallbackRes = await fetch(`${fallbackUrl}manifest.json`);
-    const fallbackContentType = fallbackRes.headers.get("content-type") || "";
-    if (fallbackRes.ok && !fallbackContentType.includes("text/html")) {
-      url = fallbackUrl;
-      res = fallbackRes;
-      contentType = fallbackContentType;
+  async loadSFZ(sfzUrl, { onProgress } = {}) {
+    const res = await fetch(sfzUrl);
+    const contentType = res.headers.get("content-type") || "";
+    if (!res.ok || contentType.includes("text/html")) {
+      throw new Error("No se pudo cargar el archivo SFZ: " + sfzUrl);
     }
+    const sfzText = await res.text();
+    const parsed = parseSFZ(sfzText);
+    const baseUrl = sfzUrl.substring(0, sfzUrl.lastIndexOf("/") + 1);
+
+    parsed.groups.forEach((g, idx) => {
+      const maxVel = g.opcodes.hivel ?? 127;
+      this.node.port.postMessage({
+        type: "layerMax",
+        layer: idx,
+        max: maxVel,
+      });
+    });
+
+    const param = Number(new URLSearchParams(location.search).get("capas"));
+    const mem = navigator.deviceMemory ?? 4;
+    const count = param >= 1 && param <= 3 ? param : mem >= 6 ? 3 : 1;
+    const groupsToLoad = parsed.groups.slice(0, count);
+
+    const jobs = [];
+    groupsToLoad.forEach((g, gIdx) => {
+      for (const r of g.regions) {
+        const file = r.opcodes.sample;
+        const midi = r.opcodes.pitch_keycenter ?? r.opcodes.key;
+        if (file && midi !== undefined) {
+          jobs.push({
+            layer: gIdx,
+            midi,
+            file,
+            layerName: g.opcodes.group_label || `v${gIdx + 1}`,
+          });
+        }
+      }
+    });
+
+    let done = 0;
+    let seconds = 0;
+    const total = jobs.length;
+
+    for (let gIdx = 0; gIdx < groupsToLoad.length; gIdx++) {
+      const queue = jobs.filter((j) => j.layer === gIdx);
+      const layerName = groupsToLoad[gIdx].opcodes.group_label || `v${gIdx + 1}`;
+
+      const loadOne = async (j) => {
+        let buf = await getCachedSample(j.file);
+        let fromCache = true;
+
+        if (!buf) {
+          fromCache = false;
+          const r = await fetch(`${baseUrl}${j.file}`);
+          const rType = r.headers.get("content-type") || "";
+          if (!r.ok || rType.includes("text/html")) throw new Error("No se pudo descargar " + j.file);
+          buf = await r.arrayBuffer();
+          saveCachedSample(j.file, buf).catch(() => {});
+        }
+
+        const audioBuf = await this.ctx.decodeAudioData(buf.slice(0));
+        const mono = new Float32Array(audioBuf.length);
+        const nch = audioBuf.numberOfChannels;
+        for (let c = 0; c < nch; c++) {
+          const d = audioBuf.getChannelData(c);
+          for (let i = 0; i < mono.length; i++) mono[i] += d[i] / nch;
+        }
+        seconds += audioBuf.duration;
+        this.node.port.postMessage(
+          { type: "sample", layer: j.layer, midi: j.midi, data: mono },
+          [mono.buffer]
+        );
+        onProgress?.(++done, total, layerName, fromCache);
+      };
+
+      await Promise.all(
+        Array.from({ length: 4 }, async () => {
+          while (queue.length) await loadOne(queue.shift());
+        })
+      );
+      this.node.port.postMessage({ type: "buildMap", layer: gIdx });
+    }
+
+    return {
+      count: total,
+      seconds,
+      layers: groupsToLoad.map((g, i) => g.opcodes.group_label || `v${i + 1}`),
+    };
   }
 
-  if (!res.ok || contentType.includes("text/html")) {
-    throw new Error("No se encontró manifest.json en " + url);
-  }
-  const manifest = await res.json();
-  if (!manifest.capas) throw new Error("El manifest no tiene 'capas'.");
+  async loadBank(baseUrl, { onProgress } = {}) {
+    if (baseUrl.endsWith(".sfz")) {
+      return this.loadSFZ(baseUrl, { onProgress });
+    }
+
+    let url = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+
+    // Intentar buscar automáticamente un archivo .sfz en la carpeta
+    try {
+      const sfzCheck = await fetch(`${url}piano.sfz`);
+      const sfzType = sfzCheck.headers.get("content-type") || "";
+      if (sfzCheck.ok && !sfzType.includes("text/html")) {
+        return this.loadSFZ(`${url}piano.sfz`, { onProgress });
+      }
+    } catch (_) {}
+
+    let res = await fetch(`${url}manifest.json`);
+    let contentType = res.headers.get("content-type") || "";
+
+    // Si no se encuentra en la ruta directa, probar subcarpetas
+    if ((!res.ok || contentType.includes("text/html")) && !url.includes("piano/")) {
+      const fallbackUrl = `${url}piano/`;
+      const fallbackRes = await fetch(`${fallbackUrl}manifest.json`);
+      const fallbackContentType = fallbackRes.headers.get("content-type") || "";
+      if (fallbackRes.ok && !fallbackContentType.includes("text/html")) {
+        url = fallbackUrl;
+        res = fallbackRes;
+        contentType = fallbackContentType;
+      }
+    }
+
+    if (!res.ok || contentType.includes("text/html")) {
+      throw new Error("No se encontró instrumento (sfz ni manifest.json) en " + url);
+    }
+    const manifest = await res.json();
+    if (!manifest.capas) throw new Error("El manifest no tiene 'capas'.");
 
   // Rango de velocity de cada capa, tomado de tu manifest
   for (const [name, c] of Object.entries(manifest.capas)) {

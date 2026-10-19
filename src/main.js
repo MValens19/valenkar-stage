@@ -53,7 +53,7 @@ $("start").addEventListener("click", async () => {
 
   // El banco carga en segundo plano: ya puedes tocar cuando termina la primera capa
   engine
-    .loadBank(`${import.meta.env.BASE_URL}samples/piano/`, {
+    .loadSFZ(`${import.meta.env.BASE_URL}library/piano/piano.sfz`, {
       onProgress: (n, total, layer, fromCache) =>
         ($("status").textContent = `${fromCache ? "Cargando desde almacenamiento local" : "Descargando"} piano (${layer})... ${n}/${total}`),
     })
