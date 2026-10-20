@@ -27,11 +27,32 @@ this.port.onmessage = ({ data: msg }) => {
         msg.lokey,
         msg.hikey,
         msg.lovel,
-        msg.hivel
+        msg.hivel,
+        msg.loopStart,
+        msg.loopEnd,
+        msg.loopMode
       );
       break;
     }
-    case "buildMap": this.wasm.buildMap(msg.layer); break;
+    case "sfzSample": {
+      const ptr = this.wasm.allocSfzSample(msg.region, msg.data.length);
+      new Float32Array(this.wasm.memory.buffer, ptr, msg.data.length).set(msg.data);
+      this.wasm.setSfzRegion(
+        msg.region,
+        msg.midi,
+        msg.lokey,
+        msg.hikey,
+        msg.lovel,
+        msg.hivel,
+        msg.seqLength,
+        msg.seqPosition,
+        msg.loopStart,
+        msg.loopEnd,
+        msg.loopMode
+      );
+      break;
+    }
+    case "buildMap": this.wasm.buildMap(msg.layer, msg.strictMap ? 1 : 0); break;
     case "reset": this.wasm.init(sampleRate); break;
   }
 };

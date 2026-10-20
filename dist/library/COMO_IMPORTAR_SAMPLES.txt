@@ -76,6 +76,23 @@ y f=105-127; algunas notas tienen limites propios, que tambien se conservan.
 Sin SFZ original, el generador calcula las zonas de teclado y usa los rangos
 genericos de velocity.
 
+LECTURA DE SFZ EXISTENTES
+-------------------------
+El reproductor admite secciones <master>, <global>, <group> y <region>, tanto
+en una sola linea como repartidas en varias. Hereda sus opcodes, procesa
+#define y #include (tambien anidados) y resuelve los samples relativos a cada
+archivo SFZ. Para el mapeo de notas acepta valores MIDI numericos y nombres como
+C4, F#1 o Gb2. Tambien usa lokey/hikey, lovel/hivel, pitch_keycenter/key y los
+bucles loop_continuous/loop_sustain con loop_start/loop_end.
+
+El motor admite regiones superpuestas: al tocar una nota reproduce todas las
+regiones cuyos rangos de nota y velocity coinciden. Tambien admite round-robin
+con seq_length/seq_position; la secuencia avanza por nota tocada. Se permiten
+hasta 128 pasos por secuencia y 4096 regiones por instrumento. No implementa
+todas las funciones de SFZ: filtros, modulaciones, efectos y envolventes
+avanzadas no se aplican; el audio se reproduce en mono. Los archivos deben
+poder decodificarse en el navegador (por ejemplo WAV, FLAC o MP3).
+
 
 --------------------------------------------------------------------------------
 3. ¿HACE FALTA GRABAR TODAS LAS TECLAS?
