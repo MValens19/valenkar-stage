@@ -134,6 +134,12 @@ async start() {
     processorOptions: { wasmBytes },
   });
 
+  this.node.port.onmessage = ({ data: msg }) => {
+    if (msg.type === "metrics" && this.onMetrics) {
+      this.onMetrics(msg);
+    }
+  };
+
   this.master = this.ctx.createGain();
   this.master.gain.value = 0.7;
   this.node.connect(this.master).connect(this.ctx.destination);

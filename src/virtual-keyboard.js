@@ -1,49 +1,107 @@
+const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
 export function createVirtualKeyboard(container, { onNoteOn, onNoteOff, startNote = 60, octaves = 2 }) {
   const WHITE = [0, 2, 4, 5, 7, 9, 11];
-  const BLACK = { 0: 1, 2: 3, 5: 6, 7: 8, 9: 10 }; // semitono blanco -> negra a su derecha
-  container.style.cssText =
-    "position:relative;display:flex;height:160px;user-select:none;touch-action:none;margin-top:16px;";
+  const BLACK = { 0: 1, 2: 3, 5: 6, 7: 8, 9: 10 };
+
+  container.className = "piano-keyboard";
+  container.innerHTML = "";
 
   const keys = new Map();
+  let currentStartNote = startNote;
+  let currentOctaves = octaves;
 
-  function press(note, el, e) {
-    e.preventDefault();
-    if (el.dataset.down) return;
-    el.dataset.down = "1";
-    el.style.filter = "brightness(0.7)";
-    onNoteOn({ note, velocity: 127, channel: 0 });
-  }
-  function release(note, el) {
-    if (!el.dataset.down) return;
-    delete el.dataset.down;
-    el.style.filter = "";
-    onNoteOff({ note, velocity: 0, channel: 0 });
-  }
+  function render() {
+    container.innerHTML = "";
+    keys.clear();
 
-  for (let o = 0; o < octaves; o++) {
-    WHITE.forEach((semi, i) => {
-      const note = startNote + o * 12 + semi;
-      const w = document.createElement("div");
-      w.style.cssText =
-        "flex:1;background:#fff;border:1px solid #333;border-radius:0 0 6px 6px;position:relative;";
-      container.appendChild(w);
-      keys.set(note, w);
+    const bed = document.createElement("div");
+    bed.className = "piano-keybed";
 
-      if (BLACK[semi] !== undefined) {
-        const bNote = startNote + o * 12 + BLACK[semi];
-        const b = document.createElement("div");
-        b.style.cssText =
-          "position:absolute;top:0;right:-14%;width:28%;height:60%;background:#111;border-radius:0 0 4px 4px;z-index:2;";
-        w.appendChild(b);
-        keys.set(bNote, b);
-      }
+    for (let o = 0; o < currentOctaves; o++) {
+      WHITE.forEach((semi) => {
+        const note = currentStartNote + o * 12 + semi;
+        const w = document.createElement("div");
+        w.className = "piano-key white-key";
+        w.dataset.note = note;
+
+        const noteLabel = document.createElement("span");
+        noteLabel.className = "key-label";
+        const octaveNum = Math.floor(note / 12) - 1;
+        if (semi === 0) {
+          noteLabel.textContent = `C${octaveNum}`;
+        }
+        w.appendChild(noteLabel);
+
+        bed.appendChild(w);
+        keys.set(note, w);
+
+        if (BLACK[semi] !== undefined) {
+          const bNote = currentStartNote + o * 12 + BLACK[semi];
+          const b = document.createElement("div");
+          b.className = "piano-key black-key";
+          b.dataset.note = bNote;
+          w.appendChild(b);
+          keys.set(bNote, b);
+        }
+      });
+    }
+
+    container.appendChild(bed);
+
+    keys.forEach((el, note) => {
+      el.addEventListener("pointerdown", (e) => {
+        e.stopPropagation();
+        el.setPointerCapture(e.pointerId);
+        press(note, el, e);
+      });
+      el.addEventListener("pointerup", (e) => {
+        e.stopPropagation();
+        release(note, el);
+      });
+      el.addEventListener("pointercancel", () => release(note, el));
+      el.addEventListener("pointerleave", (e) => {
+        if (!el.hasPointerCapture(e.pointerId)) {
+          release(note, el);
+        }
+      });
     });
   }
 
-  keys.forEach((el, note) => {
-    el.addEventListener("pointerdown", (e) => { el.setPointerCapture(e.pointerId); press(note, el, e); });
-    el.addEventListener("pointerup", () => release(note, el));
-    el.addEventListener("pointercancel", () => release(note, el));
-    el.addEventListener("pointerleave", () => release(note, el));
-  });
+  function press(note, el, e) {
+    if (e) e.preventDefault();
+    if (el.dataset.down) return;
+    el.dataset.down = "1";
+    el.classList.add("is-pressed");
+    onNoteOn({ note, velocity: 110, channel: 0 });
+  }
+
+  function release(note, el) {
+    if (!el.dataset.down) return;
+    delete el.dataset.down;
+    el.classList.remove("is-pressed");
+    onNoteOff({ note, velocity: 0, channel: 0 });
+  }
+
+  render();
+
+  return {
+    setNoteActive(note, active, velocity = 100) {
+      const el = keys.get(note);
+      if (!el) return;
+      if (active) {
+        el.classList.add("is-pressed", "external-midi");
+      } else {
+        el.classList.remove("is-pressed", "external-midi");
+      }
+    },
+    setOctaves(newStart, newOctaves) {
+      currentStartNote = Math.max(21, Math.min(108, newStart));
+      currentOctaves = Math.max(1, Math.min(7, newOctaves));
+      render();
+    },
+    getConfig() {
+      return { startNote: currentStartNote, octaves: currentOctaves };
+    }
+  };
 }
