@@ -3,37 +3,231 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WebStage Core</title>
-  <style>
-    body { font-family: system-ui, sans-serif; background: #111; color: #eee; margin: 0; padding: 16px; }
-    button { font-size: 1.1rem; padding: 12px 20px; border-radius: 8px; border: 0; background: #4f8cff; color: #fff; }
-    #status { margin: 16px 0; color: #9ad; }
-    #devices { margin: 8px 0; }
-    #log { font-family: monospace; font-size: 0.9rem; max-height: 60vh; overflow-y: auto; }
-    .on { color: #6f6; } .off { color: #f88; } .cc { color: #fc6; }
-  </style>
+  <title>Valenkar Stage · VST Piano Workstation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles.css" />
 </head>
 <body>
-  <h1>WebStage Core · Fase 2: Audio</h1>
+  <div class="vst-app-container">
+    <!-- VST Host Chassis -->
+    <div class="vst-chassis">
+      
+      <!-- Top Bezel / Header: Brand & Power -->
+      <header class="vst-top-rail">
+        <div class="brand-badge">
+          <div class="brand-crest">VK</div>
+          <div class="brand-meta">
+            <span class="brand-title">VALENKAR STAGE</span>
+            <span class="brand-edition">CONCERT GRAND EDITION · VST HOST</span>
+          </div>
+        </div>
 
-  <div style="margin: 16px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-    <label for="instrument-select"><strong>Instrumento (SFZ):</strong></label>
-    <select id="instrument-select" style="font-size: 1rem; padding: 8px 12px; border-radius: 6px; background: #222; color: #fff; border: 1px solid #444; cursor: pointer;">
-      <option value="library/piano/piano.sfz">Cargando catálogo...</option>
-    </select>
+        <!-- Master Power & Audio State -->
+        <div class="master-power-strip">
+          <div class="engine-state-pill" id="engine-state-pill">
+            <span class="led-dot" id="engine-led"></span>
+            <span id="engine-status-text">MOTOR INACTIVO</span>
+          </div>
+          <button id="start-engine-btn" class="gold-power-btn" title="Iniciar motor de audio y conexión MIDI">
+            <svg class="power-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M12 2v10M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+            </svg>
+            <span id="power-btn-text">CONECTAR AUDIO</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Wooden & Gold Rack Panel -->
+      <main class="vst-wood-panel">
+        <div class="wood-grain-overlay"></div>
+        <div class="gold-accent-line"></div>
+
+        <div class="vst-console-grid">
+          
+          <!-- Left: Preset & Library Navigator (OLED Style) -->
+          <section class="vst-module module-preset">
+            <div class="module-header">
+              <span class="module-title">INSTRUMENT PRESET</span>
+              <span class="module-indicator">SFZ ENGINE</span>
+            </div>
+            
+            <div class="oled-screen" id="oled-screen">
+              <div class="oled-glare"></div>
+              <div class="oled-top-row">
+                <span class="oled-chip" id="preset-category">CONCERT GRAND</span>
+                <span class="oled-format">24-BIT FLAC</span>
+              </div>
+              
+              <div class="oled-main-display">
+                <div class="preset-name" id="current-preset-name">Salamander Grand Piano C5</div>
+                <div class="preset-meta" id="preset-load-info">Esperando inicialización de motor...</div>
+              </div>
+
+              <!-- Progress bar when loading samples -->
+              <div class="oled-progress-wrap" id="oled-progress-wrap">
+                <div class="oled-progress-bar" id="oled-progress-bar"></div>
+              </div>
+            </div>
+
+            <!-- Instrument Selector Dropdown Styled as Gold Selector -->
+            <div class="selector-row">
+              <div class="custom-select-wrap">
+                <select id="instrument-select" class="vst-select" aria-label="Seleccionar Instrumento SFZ">
+                  <option value="library/piano/piano.sfz">Cargando biblioteca...</option>
+                </select>
+                <div class="select-gold-arrow">▼</div>
+              </div>
+              <button id="reload-preset-btn" class="vst-action-btn" title="Recargar instrumento actual">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                </svg>
+              </button>
+            </div>
+          </section>
+
+          <!-- Center: VU Meters & Polyphony Display -->
+          <section class="vst-module module-meters">
+            <div class="module-header">
+              <span class="module-title">MASTER DYNAMICS</span>
+              <span class="module-indicator">PEAK / PEAK-HOLD</span>
+            </div>
+
+            <div class="meter-cluster">
+              <div class="stereo-meters">
+                <div class="meter-channel">
+                  <span class="ch-label">L</span>
+                  <div class="vu-bar-trough">
+                    <div class="vu-bar-fill" id="vu-left"></div>
+                    <div class="vu-peak-line" id="vu-peak-l"></div>
+                  </div>
+                </div>
+                <div class="meter-channel">
+                  <span class="ch-label">R</span>
+                  <div class="vu-bar-trough">
+                    <div class="vu-bar-fill" id="vu-right"></div>
+                    <div class="vu-peak-line" id="vu-peak-r"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="meter-telemetry">
+                <div class="tele-item">
+                  <span class="tele-label">VOICES</span>
+                  <span class="tele-val highlight" id="voice-counter">00</span>
+                  <span class="tele-unit">/ 32</span>
+                </div>
+                <div class="tele-item">
+                  <span class="tele-label">SUSTAIN</span>
+                  <span class="tele-badge" id="sustain-badge">OFF</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Right: Master Output Knob & Level Controls -->
+          <section class="vst-module module-output">
+            <div class="module-header">
+              <span class="module-title">MASTER OUTPUT</span>
+              <span class="module-indicator">GAIN CONTROL</span>
+            </div>
+
+            <div class="knob-control-stage">
+              <div class="realistic-knob-wrap">
+                <div class="knob-ticks"></div>
+                <div class="gold-knob" id="master-knob">
+                  <div class="knob-cap">
+                    <div class="knob-pointer"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="gain-readout-wrap">
+                <input id="volume-range" type="range" min="0" max="1" step="0.01" value="0.7" class="visually-hidden" />
+                <span class="gain-value" id="gain-readout">-3.1 dB</span>
+                <span class="gain-sublabel">VOLUME (70%)</span>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- MIDI Hardware & Performance Ribbons -->
+        <div class="vst-sub-bar">
+          <div class="midi-hardware-status">
+            <div class="status-icon-wrap">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9"></circle>
+                <circle cx="12" cy="7" r="1.2" fill="currentColor"></circle>
+                <circle cx="7" cy="12" r="1.2" fill="currentColor"></circle>
+                <circle cx="17" cy="12" r="1.2" fill="currentColor"></circle>
+                <circle cx="9" cy="16" r="1.2" fill="currentColor"></circle>
+                <circle cx="15" cy="16" r="1.2" fill="currentColor"></circle>
+              </svg>
+            </div>
+            <div class="status-texts">
+              <span class="status-header">INTERFAZ MIDI:</span>
+              <span class="status-detail" id="midi-device-label">Detectando puertos...</span>
+            </div>
+          </div>
+
+          <!-- Virtual Keyboard Octave & Range Controller -->
+          <div class="keyboard-view-controller">
+            <span class="ctrl-caption">OCTAVAS:</span>
+            <div class="btn-group-octaves">
+              <button class="oct-btn" data-oct="2" title="2 Octavas (C4 - B5)">2 Oct</button>
+              <button class="oct-btn active" data-oct="3" title="3 Octavas (C3 - B5)">3 Oct</button>
+              <button class="oct-btn" data-oct="4" title="4 Octavas (C2 - B5)">4 Oct</button>
+              <button class="oct-btn" data-oct="5" title="5 Octavas (C2 - B6)">5 Oct</button>
+            </div>
+            <div class="transpose-control">
+              <button class="transpose-btn" id="oct-down" title="Bajar una octava">-1 Oct</button>
+              <span class="current-range-tag" id="current-range-tag">C3 - B5</span>
+              <button class="transpose-btn" id="oct-up" title="Subir una octava">+1 Oct</button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- Acoustic Piano Keybed Section -->
+      <section class="vst-keybed-section">
+        <div class="piano-felt-runner"></div>
+        <div id="keyboard-container"></div>
+      </section>
+
+      <!-- Bottom Telemetry & Status Bar -->
+      <footer class="vst-telemetry-bar">
+        <div class="telemetry-group">
+          <div class="telemetry-item" title="Latencia total reportada por el motor Web Audio">
+            <span class="dot-status green"></span>
+            <span class="lbl">LATENCIA:</span>
+            <span class="val" id="lat-total">-- ms</span>
+            <span class="sub" id="lat-breakdown">(base -- / salida --)</span>
+          </div>
+
+          <div class="telemetry-item">
+            <span class="lbl">SAMPLE RATE:</span>
+            <span class="val" id="tele-sr">-- Hz</span>
+          </div>
+        </div>
+
+        <div class="telemetry-group">
+          <div class="telemetry-item">
+            <span class="lbl">MEMORIA/CACHÉ:</span>
+            <span class="val" id="cache-status">IndexedDB Listo</span>
+          </div>
+          <div class="telemetry-item">
+            <span class="lbl">MOTOR:</span>
+            <span class="val gold">AudioWorklet + Wasm (AssemblyScript)</span>
+          </div>
+        </div>
+      </footer>
+
+    </div>
   </div>
 
-  <button id="start">Iniciar audio y MIDI</button>
-  <div id="status"></div>
-  <div id="devices"></div>
-
-  <label>Volumen
-    <input id="volume" type="range" min="0" max="1" step="0.01" value="0.7" />
-  </label>
-  <div id="latency">Latencia: (inicia el audio)</div>
-
-  <div id="keyboard"></div>
-  <div id="log"></div>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>

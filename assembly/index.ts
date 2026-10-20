@@ -82,6 +82,14 @@ export function init(sr: f64): void {
 
 export function getOutPtr(): usize { return changetype<usize>(outBuf); }
 
+export function getActiveVoices(): i32 {
+  let count: i32 = 0;
+  for (let i = 0; i < MAX_VOICES; i++) {
+    if (vStage[i] != 0) count++;
+  }
+  return count;
+}
+
 export function setLayerMax(layer: i32, max: i32): void {
   if (layer >= 0 && layer < LAYERS) layerMax[layer] = max;
 }

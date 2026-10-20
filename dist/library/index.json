@@ -1,23 +1,20 @@
 [
   {
     "id": "piano",
-    "name": "Piano",
+    "name": "Salamander Grand Piano C5",
+    "category": "Concert Grand",
     "path": "library/piano/piano.sfz"
   },
   {
     "id": "kamoepiano",
-    "name": "Kamoepiano",
+    "name": "Kamoe Classical Grand",
+    "category": "Studio Grand",
     "path": "library/kamoepiano/kamoepiano.sfz"
   },
-   {
+  {
     "id": "EPiano",
-    "name": "EPiano",
+    "name": "Vintage Rhodes Mark I (Stereo)",
+    "category": "Electric Piano",
     "path": "library/EPiano/_jRhodes-stereo-looped.sfz"
-  },
-     {
-    "id": "UprightPiano",
-    "name": "Upright Piano",
-    "path": "library/Upright/Upright.sfz"
   }
-
 ]
