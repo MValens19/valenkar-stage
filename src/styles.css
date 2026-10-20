@@ -1,23 +1,22 @@
 /* ==========================================================================
-   Valenkar Stage · Luxury VST Host Stylesheet (Nord / Keyscape / Steinway)
+   Valenkar Stage · Native Instruments Kontakt 7 / 8 Pro Workstation Style
    ========================================================================== */
 
 :root {
-  --wood-bg-dark: #140d0a;
-  --wood-bg-mid: #251610;
-  --wood-bg-light: #3d2319;
-  --gold-primary: #d4af37;
-  --gold-glow: #f3e5ab;
-  --gold-dark: #8c7322;
-  --gold-border: rgba(212, 175, 55, 0.4);
-  --chassis-metal: #121214;
-  --chassis-rim: #24252a;
-  --oled-screen-bg: #07090b;
-  --oled-cyan: #4bf0ff;
-  --oled-cyan-dim: rgba(75, 240, 255, 0.6);
-  --felt-red: #8b111a;
-  --text-main: #f0ede6;
-  --text-muted: #968c83;
+  --k-bg-black: #0c0d0f;
+  --k-rack-chassis: #16181b;
+  --k-panel-bg: #1e2126;
+  --k-panel-inner: #141619;
+  --k-border-dark: #2a2d34;
+  --k-border-subtle: #383c45;
+  --k-orange: #ff5500;
+  --k-orange-glow: rgba(255, 85, 0, 0.4);
+  --k-cyan: #00d2ff;
+  --k-white: #f3f4f6;
+  --k-gray-text: #9ca3af;
+  --k-gray-dim: #6b7280;
+  --k-key-white: #e9ecf0;
+  --k-key-black: #1a1c20;
 }
 
 * {
@@ -29,14 +28,14 @@
 }
 
 body {
-  background: radial-gradient(circle at 50% 20%, #1c1511 0%, #0a0807 80%, #000 100%);
-  color: var(--text-main);
+  background: #090a0c;
+  color: var(--k-white);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 24px 16px;
+  padding: 20px 16px;
   overflow-x: hidden;
 }
 
@@ -52,474 +51,457 @@ body {
 }
 
 /* ==========================================================================
-   VST Outer Rack Chassis
+   Outer Kontakt Rack Wrapper
    ========================================================================== */
 
-.vst-app-container {
+.kontakt-rack-wrapper {
   width: 100%;
-  max-width: 1180px;
-  filter: drop-shadow(0 28px 48px rgba(0, 0, 0, 0.95));
-}
-
-.vst-chassis {
-  background: var(--chassis-metal);
-  border-radius: 12px;
-  border: 2px solid #2d2a28;
+  max-width: 1140px;
+  background: var(--k-rack-chassis);
+  border-radius: 6px;
+  border: 1px solid var(--k-border-dark);
   box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.8),
-    0 16px 36px rgba(0, 0, 0, 0.85);
-  overflow: hidden;
+    0 20px 50px rgba(0, 0, 0, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* ==========================================================================
-   Top Rail / Header
+   Kontakt Top Host Utility Bar
    ========================================================================== */
 
-.vst-top-rail {
-  background: linear-gradient(180deg, #222226 0%, #141416 100%);
-  border-bottom: 2px solid #000;
-  padding: 12px 24px;
+.kontakt-host-bar {
+  height: 44px;
+  background: #111316;
+  border-bottom: 1px solid var(--k-border-dark);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  position: relative;
-  z-index: 10;
+  padding: 0 16px;
 }
 
-.brand-badge {
+.host-left {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 20px;
 }
 
-.brand-crest {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, var(--gold-primary) 0%, var(--gold-dark) 100%);
-  border-radius: 6px;
+.kontakt-logo {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-family: 'Cinzel', serif;
+  gap: 8px;
+}
+
+.logo-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--k-orange);
+  box-shadow: 0 0 10px var(--k-orange-glow);
+}
+
+.logo-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  letter-spacing: 2px;
+  font-size: 14px;
+  color: #fff;
+}
+
+.logo-version {
+  font-size: 10px;
   font-weight: 700;
-  font-size: 16px;
-  color: #1a1202;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.4);
-  border: 1px solid #ffea9f;
+  color: var(--k-orange);
+  background: rgba(255, 85, 0, 0.15);
+  padding: 1px 5px;
+  border-radius: 3px;
 }
 
-.brand-meta {
+.host-tabs {
   display: flex;
-  flex-direction: column;
   gap: 2px;
 }
 
-.brand-title {
-  font-family: 'Cinzel', serif;
+.host-tab {
+  background: transparent;
+  border: 0;
+  color: var(--k-gray-dim);
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 2px;
-  font-size: 17px;
+  letter-spacing: 1px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.host-tab.active {
+  background: #1f2329;
   color: #fff;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
-.brand-edition {
-  font-size: 9px;
-  letter-spacing: 1.5px;
-  color: var(--gold-primary);
-  font-weight: 600;
-}
-
-.master-power-strip {
+.master-cpu-cluster {
   display: flex;
   align-items: center;
   gap: 16px;
+  background: #0d0f12;
+  border: 1px solid #23272e;
+  border-radius: 4px;
+  padding: 4px 14px;
+}
+
+.cpu-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cpu-label {
+  font-size: 9px;
+  letter-spacing: 1px;
+  font-weight: 700;
+  color: var(--k-gray-dim);
+}
+
+.cpu-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--k-white);
 }
 
 .engine-state-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: #0d0f12;
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1px solid #282b30;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  color: #889098;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--k-gray-text);
 }
 
 .led-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #3a4048;
-  transition: all 0.3s ease;
+  background: #3f4550;
+  transition: all 0.25s ease;
 }
 
 .led-dot.active {
-  background: #34d399;
-  box-shadow: 0 0 8px #34d399, 0 0 14px rgba(52, 211, 153, 0.6);
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
 }
 
-.gold-power-btn {
-  background: linear-gradient(180deg, #e8c65f 0%, #a48220 100%);
-  color: #120d02;
-  border: 1px solid #fcebb6;
-  border-radius: 6px;
-  padding: 8px 18px;
-  font-size: 12px;
+.kontakt-power-button {
+  background: #242830;
+  color: var(--k-white);
+  border: 1px solid #3c4350;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.gold-power-btn:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
-}
-
-.gold-power-btn:active {
-  transform: translateY(1px);
-  filter: brightness(0.95);
-}
-
-.gold-power-btn.engine-running {
-  background: linear-gradient(180deg, #34373e 0%, #1e2024 100%);
-  color: #6ee7b7;
-  border-color: #059669;
-}
-
-/* ==========================================================================
-   Wood Grain Center Panel (Steinway / Keyscape Wood Texture)
-   ========================================================================== */
-
-.vst-wood-panel {
-  background: radial-gradient(circle at 50% 30%, #30170e 0%, #1d0e08 60%, #110704 100%);
-  position: relative;
-  padding: 24px 28px 20px 28px;
-  border-bottom: 3px solid #0a0503;
-  box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.7);
-}
-
-.wood-grain-overlay {
-  position: absolute;
-  inset: 0;
-  background-image: 
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 2px, transparent 2px, transparent 6px),
-    linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 40%, rgba(0,0,0,0.6) 100%);
-  pointer-events: none;
-}
-
-.gold-accent-line {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, var(--gold-primary) 25%, var(--gold-glow) 50%, var(--gold-primary) 75%, transparent 100%);
-  box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
-}
-
-.vst-console-grid {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 20px;
-}
-
-@media (max-width: 900px) {
-  .vst-console-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ==========================================================================
-   Rack Modules
-   ========================================================================== */
-
-.vst-module {
-  background: linear-gradient(180deg, rgba(28, 25, 23, 0.85) 0%, rgba(15, 14, 13, 0.95) 100%);
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 
-    0 8px 20px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  display: flex;
-  flex-direction: column;
-}
-
-.module-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding-bottom: 6px;
-}
-
-.module-title {
-  font-family: 'Cinzel', serif;
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  color: var(--gold-primary);
-  font-weight: 700;
-}
-
-.module-indicator {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  color: var(--text-muted);
-  letter-spacing: 1px;
-}
-
-/* ==========================================================================
-   OLED Preset Screen
-   ========================================================================== */
-
-.oled-screen {
-  background: var(--oled-screen-bg);
-  border: 2px solid #1a2028;
-  border-radius: 6px;
-  padding: 14px 16px;
-  box-shadow: 
-    inset 0 4px 14px rgba(0, 0, 0, 0.9),
-    0 0 10px rgba(75, 240, 255, 0.05);
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 14px;
-}
-
-.oled-glare {
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.oled-top-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-}
-
-.oled-chip {
-  background: rgba(75, 240, 255, 0.15);
-  color: var(--oled-cyan);
-  padding: 2px 6px;
-  border-radius: 3px;
-  border: 1px solid rgba(75, 240, 255, 0.3);
-  font-weight: 600;
-}
-
-.oled-format {
-  color: #64748b;
-}
-
-.oled-main-display {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.preset-name {
-  font-family: 'Cinzel', serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 1px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-}
-
-.preset-meta {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  color: var(--oled-cyan-dim);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.oled-progress-wrap {
-  height: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
-  margin-top: 10px;
-  overflow: hidden;
-}
-
-.oled-progress-bar {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #0ea5e9, var(--oled-cyan));
-  box-shadow: 0 0 8px var(--oled-cyan);
-  transition: width 0.15s ease-out;
-}
-
-.selector-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.custom-select-wrap {
-  flex: 1;
-  position: relative;
-}
-
-.vst-select {
-  width: 100%;
-  appearance: none;
-  background: linear-gradient(180deg, #1b1715 0%, #120e0d 100%);
-  border: 1px solid rgba(212, 175, 55, 0.4);
-  color: #f7eed7;
-  padding: 10px 32px 10px 14px;
-  border-radius: 5px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.vst-select:focus {
-  border-color: var(--gold-primary);
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
-}
-
-.vst-select option {
-  background: #181412;
-  color: #fff;
-}
-
-.select-gold-arrow {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--gold-primary);
-  font-size: 10px;
-  pointer-events: none;
-}
-
-.vst-action-btn {
-  background: #24201d;
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  color: var(--gold-primary);
-  width: 38px;
-  height: 38px;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.vst-action-btn:hover {
-  background: #332d28;
-  border-color: var(--gold-primary);
+.kontakt-power-button:hover {
+  background: #303642;
+  border-color: var(--k-orange);
+}
+
+.kontakt-power-button.engine-running {
+  background: var(--k-orange);
+  color: #fff;
+  border-color: #ff7733;
+  box-shadow: 0 0 12px var(--k-orange-glow);
 }
 
 /* ==========================================================================
-   Dynamics & VU Meter Module
+   Kontakt Instrument Slot (Multi-Rack)
    ========================================================================== */
 
-.meter-cluster {
+.kontakt-instrument-slot {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+}
+
+.slot-header-strip {
+  background: linear-gradient(180deg, #262930 0%, #1e2127 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 2px solid #101215;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.slot-badge {
+  background: #111316;
+  color: var(--k-orange);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  border: 1px solid #333842;
+}
+
+.slot-meta-top {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.slot-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.slot-sub {
+  font-size: 10px;
+  letter-spacing: 1px;
+  font-weight: 600;
+  color: var(--k-gray-dim);
+}
+
+.slot-quick-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.midi-ch-tag {
+  background: #121418;
+  border: 1px solid #2b303a;
+  border-radius: 3px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+}
+
+.tag-lbl {
+  color: var(--k-gray-dim);
+  font-weight: 700;
+}
+
+.tag-val {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--k-orange);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Slot Body Panel
+   ========================================================================== */
+
+.slot-body-panel {
+  background: radial-gradient(circle at 50% 0%, #20242b 0%, #17191e 80%, #121417 100%);
+  padding: 18px 20px 14px 20px;
+  border-bottom: 2px solid #0e1012;
+}
+
+.kontakt-grid {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .kontakt-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.k-panel {
+  background: var(--k-panel-inner);
+  border: 1px solid var(--k-border-dark);
+  border-radius: 4px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.k-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #23272e;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+.k-ph-title {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--k-gray-text);
+}
+
+.k-ph-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--k-orange);
+  letter-spacing: 0.8px;
+}
+
+/* ==========================================================================
+   Panel 1: Browser & Loading Progress
+   ========================================================================== */
+
+.k-browser-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   height: 100%;
   justify-content: space-between;
 }
 
-.stereo-meters {
-  display: flex;
-  gap: 14px;
-  justify-content: center;
-  background: #090b0d;
-  padding: 12px;
-  border-radius: 6px;
-  border: 1px solid #1a1e24;
+.custom-select-wrap {
+  position: relative;
+  width: 100%;
 }
 
-.meter-channel {
+.k-select {
+  width: 100%;
+  appearance: none;
+  background: #1c2026;
+  border: 1px solid #363c47;
+  color: #fff;
+  padding: 8px 32px 8px 12px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.k-select:focus {
+  border-color: var(--k-orange);
+}
+
+.k-select option {
+  background: #181b20;
+  color: #fff;
+}
+
+.k-select-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--k-orange);
+  font-size: 9px;
+  pointer-events: none;
+}
+
+.k-loader-status-card {
+  background: #0f1114;
+  border: 1px solid #23272e;
+  border-radius: 3px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.k-status-line {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+}
+
+.k-loader-lbl {
+  color: var(--k-gray-dim);
+  font-weight: 700;
+}
+
+.k-loader-val {
+  color: var(--k-cyan);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.k-progress-track {
+  height: 4px;
+  background: #1b1e24;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.k-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ff5500, #ff8800);
+  box-shadow: 0 0 6px var(--k-orange-glow);
+  transition: width 0.15s ease-out;
+}
+
+.k-button-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.k-mini-btn {
+  background: #252a33;
+  border: 1px solid #3d4554;
+  color: #d1d5db;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 6px 12px;
+  border-radius: 3px;
   display: flex;
   align-items: center;
   gap: 6px;
-  flex: 1;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.ch-label {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  color: #64748b;
-  font-weight: 600;
+.k-mini-btn:hover {
+  background: #333a46;
+  border-color: var(--k-orange);
+  color: #fff;
 }
 
-.vu-bar-trough {
-  flex: 1;
-  height: 14px;
-  background: #111418;
-  border-radius: 3px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
-}
+/* ==========================================================================
+   Panel 2: Voices & Metering
+   ========================================================================== */
 
-.vu-bar-fill {
+.k-meters-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #10b981 0%, #34d399 65%, #f59e0b 85%, #ef4444 100%);
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
-  transition: width 0.05s ease-out;
+  justify-content: space-between;
 }
 
-.vu-peak-line {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: #fff;
-  opacity: 0.8;
-  left: 0%;
-  transition: left 0.1s;
-}
-
-.meter-telemetry {
+.k-tele-cluster {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
-.tele-item {
-  background: #141312;
-  border: 1px solid #282420;
-  border-radius: 5px;
+.k-tele-block {
+  background: #0f1114;
+  border: 1px solid #23272e;
+  border-radius: 3px;
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -527,201 +509,240 @@ body {
   justify-content: center;
 }
 
-.tele-label {
-  font-size: 9px;
+.k-tb-lbl {
+  font-size: 8px;
   letter-spacing: 1px;
-  color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 800;
+  color: var(--k-gray-dim);
   margin-bottom: 2px;
 }
 
-.tele-val {
+.k-tb-val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;
   color: #fff;
 }
 
-.tele-val.highlight {
-  color: var(--gold-primary);
-  text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+.k-tb-val strong {
+  color: var(--k-orange);
 }
 
-.tele-unit {
-  font-size: 9px;
-  color: #666;
+.k-tb-val small {
+  font-size: 10px;
+  color: var(--k-gray-dim);
 }
 
-.tele-badge {
+.k-sustain-pill {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 1px;
   padding: 2px 8px;
-  border-radius: 3px;
-  background: #202020;
-  color: #777;
+  border-radius: 2px;
+  background: #22262d;
+  color: var(--k-gray-dim);
   transition: all 0.2s;
 }
 
-.tele-badge.active {
-  background: #f59e0b;
-  color: #1a0f00;
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+.k-sustain-pill.active {
+  background: var(--k-orange);
+  color: #fff;
+  box-shadow: 0 0 10px var(--k-orange-glow);
+}
+
+.k-vu-wrapper {
+  background: #0f1114;
+  border: 1px solid #23272e;
+  border-radius: 3px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.k-vu-unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vu-ch-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--k-gray-dim);
+}
+
+.k-vu-trough {
+  flex: 1;
+  height: 10px;
+  background: #171a20;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.k-vu-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #10b981 0%, #34d399 70%, #ff5500 90%, #ef4444 100%);
+  transition: width 0.05s ease-out;
+}
+
+.k-vu-peak {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #fff;
+  left: 0%;
+  transition: left 0.1s;
 }
 
 /* ==========================================================================
-   Master Output Knob
+   Panel 3: Master Output Knob
    ========================================================================== */
 
-.knob-control-stage {
+.k-output-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: 12px;
+  gap: 10px;
 }
 
-.realistic-knob-wrap {
-  position: relative;
-  width: 72px;
-  height: 72px;
+.kontakt-knob-container {
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.gold-knob {
-  width: 58px;
-  height: 58px;
+.kontakt-rotary-knob {
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #fce9a5 0%, #b8912e 50%, #684d0d 100%);
-  border: 2px solid #5a420b;
+  background: radial-gradient(circle at 40% 40%, #2e343f 0%, #1a1e24 75%, #0e1012 100%);
+  border: 2px solid #3a4250;
   box-shadow: 
-    0 8px 18px rgba(0, 0, 0, 0.8),
-    inset 0 2px 3px rgba(255, 255, 255, 0.6);
+    0 6px 14px rgba(0, 0, 0, 0.7),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
   cursor: ns-resize;
   position: relative;
   transition: transform 0.05s linear;
-}
-
-.knob-cap {
-  position: absolute;
-  inset: 6px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, #2a2016 0%, #16100b 100%);
-  border: 1px solid #75591c;
   display: flex;
   justify-content: center;
 }
 
-.knob-pointer {
+.k-knob-tick {
   width: 3px;
   height: 10px;
-  background: #fff;
-  border-radius: 2px;
-  margin-top: 3px;
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+  background: var(--k-orange);
+  border-radius: 1px;
+  margin-top: 4px;
+  box-shadow: 0 0 6px var(--k-orange-glow);
 }
 
-.gain-readout-wrap {
+.k-gain-display {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
 }
 
-.gain-value {
+.k-db-text {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--gold-primary);
-  text-shadow: 0 0 6px rgba(212, 175, 55, 0.4);
+  color: var(--k-orange);
 }
 
 .gain-sublabel {
   font-size: 9px;
-  letter-spacing: 0.8px;
-  color: var(--text-muted);
+  color: var(--k-gray-dim);
+  letter-spacing: 0.5px;
 }
 
 /* ==========================================================================
-   Sub-bar: MIDI Status & Octave Controls
+   Kontakt Lower Utility Strip
    ========================================================================== */
 
-.vst-sub-bar {
-  position: relative;
-  z-index: 2;
-  margin-top: 18px;
+.k-lower-bar {
+  margin-top: 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  background: rgba(14, 12, 11, 0.8);
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  border-radius: 6px;
-  padding: 8px 16px;
+  background: #111316;
+  border: 1px solid #23272e;
+  border-radius: 3px;
+  padding: 6px 14px;
 }
 
-.midi-hardware-status {
+.k-midi-input-indicator {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.status-icon-wrap {
-  color: var(--gold-primary);
-  display: flex;
-}
-
-.status-texts {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.status-header {
-  font-size: 10px;
-  letter-spacing: 1px;
-  font-weight: 700;
-  color: var(--text-muted);
-}
-
-.status-detail {
-  font-size: 11px;
-  color: #fff;
+.k-midi-icon {
   font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--k-orange);
+  background: rgba(255, 85, 0, 0.15);
+  border: 1px solid rgba(255, 85, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 2px;
 }
 
-.keyboard-view-controller {
+.k-midi-details {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
-.ctrl-caption {
-  font-size: 10px;
-  letter-spacing: 1px;
+.k-midi-label {
+  font-size: 9px;
   font-weight: 700;
-  color: var(--gold-primary);
+  color: var(--k-gray-dim);
 }
 
-.btn-group-octaves {
+.k-midi-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--k-white);
+}
+
+.k-keyboard-toolbar {
   display: flex;
-  background: #141210;
-  border-radius: 4px;
-  border: 1px solid #332b23;
+  align-items: center;
+  gap: 12px;
+}
+
+.k-kt-caption {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--k-gray-dim);
+}
+
+.k-octave-group {
+  display: flex;
+  background: #191c22;
+  border: 1px solid #2d333e;
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .oct-btn {
   background: transparent;
   border: 0;
-  color: #8c8278;
-  padding: 5px 10px;
-  font-size: 11px;
-  font-weight: 600;
+  color: var(--k-gray-dim);
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -732,67 +753,57 @@ body {
 }
 
 .oct-btn.active {
-  background: var(--gold-dark);
+  background: var(--k-orange);
   color: #fff;
 }
 
-.transpose-control {
+.k-transpose-group {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 .transpose-btn {
-  background: #25201c;
-  border: 1px solid #44382c;
+  background: #20242b;
+  border: 1px solid #343a46;
   color: #ddd;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 3px;
   cursor: pointer;
 }
 
 .transpose-btn:hover {
-  border-color: var(--gold-primary);
+  border-color: var(--k-orange);
   color: #fff;
 }
 
 .current-range-tag {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
-  color: var(--gold-glow);
-  background: #0d0c0b;
+  color: var(--k-orange);
+  background: #0f1114;
   padding: 3px 8px;
-  border-radius: 3px;
-  border: 1px solid #2c251f;
+  border-radius: 2px;
+  border: 1px solid #262a32;
 }
 
 /* ==========================================================================
-   Realistic Acoustic Piano Keybed
+   Kontakt Studio Keybed
    ========================================================================== */
 
-.vst-keybed-section {
-  position: relative;
-  background: #0d0b0a;
-  padding: 0 16px 14px 16px;
-  box-shadow: inset 0 8px 16px rgba(0, 0, 0, 0.95);
-}
-
-.piano-felt-runner {
-  height: 6px;
-  background: linear-gradient(180deg, #500a0f 0%, var(--felt-red) 50%, #3a060a 100%);
-  margin: 0 4px;
-  border-radius: 2px 2px 0 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+.kontakt-keybed-wrapper {
+  background: #0c0d10;
+  padding: 0 12px 10px 12px;
+  border-bottom: 1px solid #23272e;
 }
 
 .piano-keybed {
   display: flex;
-  height: 175px;
+  height: 165px;
   position: relative;
-  border-radius: 0 0 6px 6px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.8);
 }
 
 .piano-key {
@@ -800,136 +811,100 @@ body {
   touch-action: none;
 }
 
-/* White Key: Ivory Gradient & 3D Shadow */
+/* White Key: Kontakt Matte Finish */
 .white-key {
   flex: 1;
-  background: linear-gradient(180deg, #f6f3eb 0%, #ebe6dc 85%, #dcd4c6 100%);
-  border: 1px solid #948b80;
+  background: linear-gradient(180deg, #f7f9fa 0%, #e2e6eb 90%, #d0d6de 100%);
+  border: 1px solid #7d8592;
   border-top: none;
-  border-radius: 0 0 5px 5px;
+  border-radius: 0 0 3px 3px;
   position: relative;
   z-index: 1;
   box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset -1px -1px 3px rgba(0, 0, 0, 0.2),
-    0 4px 6px rgba(0, 0, 0, 0.4);
+    inset 0 -1px 2px rgba(0, 0, 0, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 8px;
-  transition: transform 0.04s ease-out, filter 0.04s ease-out, background 0.04s;
+  padding-bottom: 6px;
+  transition: transform 0.04s ease-out, filter 0.04s, background 0.04s;
 }
 
 .white-key .key-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  color: #a39789;
+  color: #8c95a3;
   font-family: 'JetBrains Mono', monospace;
   pointer-events: none;
 }
 
 .white-key:active,
 .white-key.is-pressed {
-  background: linear-gradient(180deg, #ebe5d8 0%, #ded6c5 100%);
+  background: linear-gradient(180deg, #dce2e8 0%, #cbd3dc 100%);
   transform: translateY(2px);
-  box-shadow: 
-    inset 0 4px 8px rgba(0, 0, 0, 0.4),
-    0 1px 2px rgba(0, 0, 0, 0.3);
-  filter: brightness(0.92);
+  filter: brightness(0.9);
 }
 
 .white-key.external-midi {
-  background: linear-gradient(180deg, #fff0cb 0%, #fae298 100%) !important;
-  box-shadow: 0 0 12px rgba(212, 175, 55, 0.6), inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  background: linear-gradient(180deg, #ffe5d6 0%, #ffb38a 100%) !important;
+  box-shadow: 0 0 10px var(--k-orange-glow) !important;
 }
 
-/* Black Key: Ebony matte finish */
+/* Black Key: Modern Sleek Ebony */
 .black-key {
   position: absolute;
   top: 0;
   right: -15%;
   width: 30%;
-  height: 62%;
-  background: linear-gradient(180deg, #2b2b2e 0%, #17171a 70%, #0d0d0f 100%);
-  border-radius: 0 0 3px 3px;
-  border: 1px solid #09090b;
+  height: 60%;
+  background: linear-gradient(180deg, #2a2e36 0%, #16191e 75%, #0f1114 100%);
+  border-radius: 0 0 2px 2px;
+  border: 1px solid #090a0c;
   border-top: none;
   z-index: 3;
-  box-shadow: 
-    -2px 3px 6px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: transform 0.04s ease-out, filter 0.04s ease-out;
+  box-shadow: -2px 3px 5px rgba(0, 0, 0, 0.7);
+  transition: transform 0.04s ease-out, filter 0.04s;
 }
 
 .black-key:active,
 .black-key.is-pressed {
   transform: translateY(2px);
   filter: brightness(0.75);
-  box-shadow: -1px 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .black-key.external-midi {
-  background: linear-gradient(180deg, #7c5c16 0%, #443209 100%) !important;
-  box-shadow: 0 0 12px rgba(212, 175, 55, 0.8) !important;
+  background: linear-gradient(180deg, #a83d00 0%, #612300 100%) !important;
+  box-shadow: 0 0 10px var(--k-orange-glow) !important;
 }
 
 /* ==========================================================================
-   Bottom Telemetry Footer
+   Kontakt Rack Footer
    ========================================================================== */
 
-.vst-telemetry-bar {
-  background: #09090b;
-  border-top: 1px solid #1a1a1e;
-  padding: 10px 24px;
+.kontakt-rack-footer {
+  background: #111316;
+  padding: 8px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-size: 11px;
-}
-
-.telemetry-group {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-
-.telemetry-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  font-size: 10px;
+  color: var(--k-gray-dim);
   font-family: 'JetBrains Mono', monospace;
 }
 
-.telemetry-item .lbl {
-  color: #64748b;
-  font-size: 10px;
-  font-weight: 600;
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.telemetry-item .val {
-  color: #e2e8f0;
-  font-weight: 600;
-}
-
-.telemetry-item .val.gold {
-  color: var(--gold-primary);
-}
-
-.telemetry-item .sub {
-  color: #475569;
-  font-size: 9px;
-}
-
-.dot-status {
-  width: 6px;
-  height: 6px;
+.f-dot {
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: #475569;
+  background: var(--k-orange);
 }
 
-.dot-status.green {
-  background: #10b981;
-  box-shadow: 0 0 6px #10b981;
+.f-sep {
+  opacity: 0.3;
 }

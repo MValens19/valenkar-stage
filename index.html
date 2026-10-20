@@ -3,229 +3,233 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Valenkar Stage · VST Piano Workstation</title>
+  <title>Valenkar Stage · Kontakt Sampler Workstation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/styles.css" />
 </head>
 <body>
-  <div class="vst-app-container">
-    <!-- VST Host Chassis -->
-    <div class="vst-chassis">
-      
-      <!-- Top Bezel / Header: Brand & Power -->
-      <header class="vst-top-rail">
-        <div class="brand-badge">
-          <div class="brand-crest">VK</div>
-          <div class="brand-meta">
-            <span class="brand-title">VALENKAR STAGE</span>
-            <span class="brand-edition">CONCERT GRAND EDITION · VST HOST</span>
+  <div class="kontakt-rack-wrapper">
+    <!-- Top Host Bar: Kontakt Global Utility Header -->
+    <header class="kontakt-host-bar">
+      <div class="host-left">
+        <div class="kontakt-logo">
+          <span class="logo-circle"></span>
+          <span class="logo-text">KONTAKT</span>
+          <span class="logo-version">7.8</span>
+        </div>
+        <div class="host-tabs">
+          <button class="host-tab active">MAIN</button>
+          <button class="host-tab">RACK</button>
+          <button class="host-tab">BROWSER</button>
+        </div>
+      </div>
+
+      <div class="host-center">
+        <div class="master-cpu-cluster">
+          <div class="cpu-stat">
+            <span class="cpu-label">ENGINE</span>
+            <div class="engine-state-pill" id="engine-state-pill">
+              <span class="led-dot" id="engine-led"></span>
+              <span id="engine-status-text">OFFLINE</span>
+            </div>
+          </div>
+          <div class="cpu-stat">
+            <span class="cpu-label">SYSTEM LATENCY</span>
+            <span class="cpu-val" id="lat-total">-- ms</span>
+          </div>
+          <div class="cpu-stat">
+            <span class="cpu-label">RATE</span>
+            <span class="cpu-val" id="tele-sr">-- Hz</span>
           </div>
         </div>
+      </div>
 
-        <!-- Master Power & Audio State -->
-        <div class="master-power-strip">
-          <div class="engine-state-pill" id="engine-state-pill">
-            <span class="led-dot" id="engine-led"></span>
-            <span id="engine-status-text">MOTOR INACTIVO</span>
-          </div>
-          <button id="start-engine-btn" class="gold-power-btn" title="Iniciar motor de audio y conexión MIDI">
-            <svg class="power-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-              <path d="M12 2v10M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-            </svg>
-            <span id="power-btn-text">CONECTAR AUDIO</span>
-          </button>
+      <div class="host-right">
+        <button id="start-engine-btn" class="kontakt-power-button" title="Activar motor de audio y MIDI">
+          <svg class="p-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2v10M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+          </svg>
+          <span id="power-btn-text">AUDIO ON</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Sampler Instrument Slot (Kontakt Multi-Rack Instrument) -->
+    <main class="kontakt-instrument-slot">
+      <!-- Instrument Header Strip -->
+      <div class="slot-header-strip">
+        <div class="slot-badge">01</div>
+        <div class="slot-meta-top">
+          <div class="slot-title" id="current-preset-name">Salamander Grand Piano C5</div>
+          <div class="slot-sub"><span id="preset-category">CONCERT GRAND</span> · SFZ SAMPLER ENGINE · 24-BIT FLAC</div>
         </div>
-      </header>
+        <div class="slot-quick-controls">
+          <div class="midi-ch-tag">
+            <span class="tag-lbl">MIDI CH</span>
+            <span class="tag-val">[A] 1</span>
+          </div>
+          <div class="midi-ch-tag">
+            <span class="tag-lbl">OUTPUT</span>
+            <span class="tag-val">st. 1</span>
+          </div>
+          <div class="midi-ch-tag">
+            <span class="tag-lbl">MEMORY</span>
+            <span class="tag-val" id="cache-status">IndexedDB</span>
+          </div>
+        </div>
+      </div>
 
-      <!-- Main Wooden & Gold Rack Panel -->
-      <main class="vst-wood-panel">
-        <div class="wood-grain-overlay"></div>
-        <div class="gold-accent-line"></div>
-
-        <div class="vst-console-grid">
+      <!-- Instrument Performance GUI Wallpaper Panel -->
+      <div class="slot-body-panel">
+        <div class="kontakt-grid">
           
-          <!-- Left: Preset & Library Navigator (OLED Style) -->
-          <section class="vst-module module-preset">
-            <div class="module-header">
-              <span class="module-title">INSTRUMENT PRESET</span>
-              <span class="module-indicator">SFZ ENGINE</span>
-            </div>
-            
-            <div class="oled-screen" id="oled-screen">
-              <div class="oled-glare"></div>
-              <div class="oled-top-row">
-                <span class="oled-chip" id="preset-category">CONCERT GRAND</span>
-                <span class="oled-format">24-BIT FLAC</span>
-              </div>
-              
-              <div class="oled-main-display">
-                <div class="preset-name" id="current-preset-name">Salamander Grand Piano C5</div>
-                <div class="preset-meta" id="preset-load-info">Esperando inicialización de motor...</div>
-              </div>
-
-              <!-- Progress bar when loading samples -->
-              <div class="oled-progress-wrap" id="oled-progress-wrap">
-                <div class="oled-progress-bar" id="oled-progress-bar"></div>
-              </div>
+          <!-- Column 1: Preset & Sample Bank Navigator -->
+          <div class="k-panel k-panel-browser">
+            <div class="k-panel-header">
+              <span class="k-ph-title">INSTRUMENT BROWSER</span>
+              <span class="k-ph-badge">LIBRARY</span>
             </div>
 
-            <!-- Instrument Selector Dropdown Styled as Gold Selector -->
-            <div class="selector-row">
+            <div class="k-browser-content">
               <div class="custom-select-wrap">
-                <select id="instrument-select" class="vst-select" aria-label="Seleccionar Instrumento SFZ">
-                  <option value="library/piano/piano.sfz">Cargando biblioteca...</option>
+                <select id="instrument-select" class="k-select" aria-label="Seleccionar Instrumento SFZ">
+                  <option value="library/piano/piano.sfz">Cargando catálogo...</option>
                 </select>
-                <div class="select-gold-arrow">▼</div>
+                <div class="k-select-arrow">▼</div>
               </div>
-              <button id="reload-preset-btn" class="vst-action-btn" title="Recargar instrumento actual">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
-                </svg>
-              </button>
-            </div>
-          </section>
 
-          <!-- Center: VU Meters & Polyphony Display -->
-          <section class="vst-module module-meters">
-            <div class="module-header">
-              <span class="module-title">MASTER DYNAMICS</span>
-              <span class="module-indicator">PEAK / PEAK-HOLD</span>
+              <div class="k-loader-status-card">
+                <div class="k-status-line">
+                  <span class="k-loader-lbl">STATUS:</span>
+                  <span class="k-loader-val" id="preset-load-info">Inicia el motor de audio</span>
+                </div>
+                <div class="k-progress-track" id="oled-progress-wrap">
+                  <div class="k-progress-fill" id="oled-progress-bar"></div>
+                </div>
+              </div>
+
+              <div class="k-button-row">
+                <button id="reload-preset-btn" class="k-mini-btn" title="Recargar librería actual">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                  </svg>
+                  RELOAD SAMPLES
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Voice Monitor & Dynamic Peak VU Meters -->
+          <div class="k-panel k-panel-meters">
+            <div class="k-panel-header">
+              <span class="k-ph-title">VOICES & DYNAMICS</span>
+              <span class="k-ph-badge">WASMWORKLET</span>
             </div>
 
-            <div class="meter-cluster">
-              <div class="stereo-meters">
-                <div class="meter-channel">
-                  <span class="ch-label">L</span>
-                  <div class="vu-bar-trough">
-                    <div class="vu-bar-fill" id="vu-left"></div>
-                    <div class="vu-peak-line" id="vu-peak-l"></div>
+            <div class="k-meters-content">
+              <div class="k-tele-cluster">
+                <div class="k-tele-block">
+                  <span class="k-tb-lbl">MAX VOICES</span>
+                  <span class="k-tb-val"><strong id="voice-counter">00</strong><small> / 32</small></span>
+                </div>
+                <div class="k-tele-block">
+                  <span class="k-tb-lbl">SUSTAIN PEDAL</span>
+                  <span class="k-sustain-pill" id="sustain-badge">OFF</span>
+                </div>
+              </div>
+
+              <div class="k-vu-wrapper">
+                <div class="k-vu-unit">
+                  <span class="vu-ch-label">L</span>
+                  <div class="k-vu-trough">
+                    <div class="k-vu-fill" id="vu-left"></div>
+                    <div class="k-vu-peak" id="vu-peak-l"></div>
                   </div>
                 </div>
-                <div class="meter-channel">
-                  <span class="ch-label">R</span>
-                  <div class="vu-bar-trough">
-                    <div class="vu-bar-fill" id="vu-right"></div>
-                    <div class="vu-peak-line" id="vu-peak-r"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="meter-telemetry">
-                <div class="tele-item">
-                  <span class="tele-label">VOICES</span>
-                  <span class="tele-val highlight" id="voice-counter">00</span>
-                  <span class="tele-unit">/ 32</span>
-                </div>
-                <div class="tele-item">
-                  <span class="tele-label">SUSTAIN</span>
-                  <span class="tele-badge" id="sustain-badge">OFF</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Right: Master Output Knob & Level Controls -->
-          <section class="vst-module module-output">
-            <div class="module-header">
-              <span class="module-title">MASTER OUTPUT</span>
-              <span class="module-indicator">GAIN CONTROL</span>
-            </div>
-
-            <div class="knob-control-stage">
-              <div class="realistic-knob-wrap">
-                <div class="knob-ticks"></div>
-                <div class="gold-knob" id="master-knob">
-                  <div class="knob-cap">
-                    <div class="knob-pointer"></div>
+                <div class="k-vu-unit">
+                  <span class="vu-ch-label">R</span>
+                  <div class="k-vu-trough">
+                    <div class="k-vu-fill" id="vu-right"></div>
+                    <div class="k-vu-peak" id="vu-peak-r"></div>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div class="gain-readout-wrap">
+          <!-- Column 3: Kontakt Precision Rotary Output Knob -->
+          <div class="k-panel k-panel-output">
+            <div class="k-panel-header">
+              <span class="k-ph-title">MASTER OUTPUT</span>
+              <span class="k-ph-badge">GAIN</span>
+            </div>
+
+            <div class="k-output-content">
+              <div class="kontakt-knob-container">
+                <div class="kontakt-rotary-knob" id="master-knob" title="Arrastra verticalmente para ajustar volumen">
+                  <div class="k-knob-tick"></div>
+                </div>
+              </div>
+
+              <div class="k-gain-display">
                 <input id="volume-range" type="range" min="0" max="1" step="0.01" value="0.7" class="visually-hidden" />
-                <span class="gain-value" id="gain-readout">-3.1 dB</span>
+                <span class="k-db-text" id="gain-readout">-3.1 dB</span>
                 <span class="gain-sublabel">VOLUME (70%)</span>
               </div>
             </div>
-          </section>
+          </div>
 
         </div>
 
-        <!-- MIDI Hardware & Performance Ribbons -->
-        <div class="vst-sub-bar">
-          <div class="midi-hardware-status">
-            <div class="status-icon-wrap">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="9"></circle>
-                <circle cx="12" cy="7" r="1.2" fill="currentColor"></circle>
-                <circle cx="7" cy="12" r="1.2" fill="currentColor"></circle>
-                <circle cx="17" cy="12" r="1.2" fill="currentColor"></circle>
-                <circle cx="9" cy="16" r="1.2" fill="currentColor"></circle>
-                <circle cx="15" cy="16" r="1.2" fill="currentColor"></circle>
-              </svg>
-            </div>
-            <div class="status-texts">
-              <span class="status-header">INTERFAZ MIDI:</span>
-              <span class="status-detail" id="midi-device-label">Detectando puertos...</span>
+        <!-- Kontakt Lower Utility Strip: MIDI Device & Octave Controls -->
+        <div class="k-lower-bar">
+          <div class="k-midi-input-indicator">
+            <span class="k-midi-icon">DIN</span>
+            <div class="k-midi-details">
+              <span class="k-midi-label">PORT:</span>
+              <span class="k-midi-val" id="midi-device-label">Detectando hardware MIDI...</span>
             </div>
           </div>
 
-          <!-- Virtual Keyboard Octave & Range Controller -->
-          <div class="keyboard-view-controller">
-            <span class="ctrl-caption">OCTAVAS:</span>
-            <div class="btn-group-octaves">
-              <button class="oct-btn" data-oct="2" title="2 Octavas (C4 - B5)">2 Oct</button>
-              <button class="oct-btn active" data-oct="3" title="3 Octavas (C3 - B5)">3 Oct</button>
-              <button class="oct-btn" data-oct="4" title="4 Octavas (C2 - B5)">4 Oct</button>
-              <button class="oct-btn" data-oct="5" title="5 Octavas (C2 - B6)">5 Oct</button>
+          <div class="k-keyboard-toolbar">
+            <span class="k-kt-caption">KEYBED VIEW:</span>
+            <div class="k-octave-group">
+              <button class="oct-btn" data-oct="2">2 Oct</button>
+              <button class="oct-btn active" data-oct="3">3 Oct</button>
+              <button class="oct-btn" data-oct="4">4 Oct</button>
+              <button class="oct-btn" data-oct="5">5 Oct</button>
             </div>
-            <div class="transpose-control">
-              <button class="transpose-btn" id="oct-down" title="Bajar una octava">-1 Oct</button>
+            <div class="k-transpose-group">
+              <button class="transpose-btn" id="oct-down">-1 Oct</button>
               <span class="current-range-tag" id="current-range-tag">C3 - B5</span>
-              <button class="transpose-btn" id="oct-up" title="Subir una octava">+1 Oct</button>
+              <button class="transpose-btn" id="oct-up">+1 Oct</button>
             </div>
           </div>
         </div>
 
-      </main>
+      </div>
 
-      <!-- Acoustic Piano Keybed Section -->
-      <section class="vst-keybed-section">
-        <div class="piano-felt-runner"></div>
+      <!-- Kontakt Keybed Strip (Modern Studio Matte Keys) -->
+      <div class="kontakt-keybed-wrapper">
         <div id="keyboard-container"></div>
-      </section>
+      </div>
 
-      <!-- Bottom Telemetry & Status Bar -->
-      <footer class="vst-telemetry-bar">
-        <div class="telemetry-group">
-          <div class="telemetry-item" title="Latencia total reportada por el motor Web Audio">
-            <span class="dot-status green"></span>
-            <span class="lbl">LATENCIA:</span>
-            <span class="val" id="lat-total">-- ms</span>
-            <span class="sub" id="lat-breakdown">(base -- / salida --)</span>
-          </div>
-
-          <div class="telemetry-item">
-            <span class="lbl">SAMPLE RATE:</span>
-            <span class="val" id="tele-sr">-- Hz</span>
-          </div>
+      <!-- Kontakt Rack Bottom Status Line -->
+      <footer class="kontakt-rack-footer">
+        <div class="footer-left">
+          <span class="f-dot"></span>
+          <span>VALENKAR STAGE CORE</span>
+          <span class="f-sep">|</span>
+          <span id="lat-breakdown">(base -- / salida --)</span>
         </div>
-
-        <div class="telemetry-group">
-          <div class="telemetry-item">
-            <span class="lbl">MEMORIA/CACHÉ:</span>
-            <span class="val" id="cache-status">IndexedDB Listo</span>
-          </div>
-          <div class="telemetry-item">
-            <span class="lbl">MOTOR:</span>
-            <span class="val gold">AudioWorklet + Wasm (AssemblyScript)</span>
-          </div>
+        <div class="footer-right">
+          <span>HIGH ACCURACY POLYPHONIC WASM ENGINE</span>
         </div>
       </footer>
 
-    </div>
+    </main>
   </div>
 
   <script type="module" src="/src/main.js"></script>
