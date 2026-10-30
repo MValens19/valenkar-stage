@@ -194,6 +194,30 @@ body {
   box-shadow: 0 0 8px #22c55e;
 }
 
+.host-live-badge {
+  background: #1e2229;
+  color: var(--k-white);
+  border: 1px solid #343c4a;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.host-live-badge .live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+}
+
 .kontakt-power-button {
   background: #242830;
   color: var(--k-white);
@@ -599,7 +623,7 @@ body {
 }
 
 /* ==========================================================================
-   Panel 3: Master Output Knob
+   Panel 3: Master Output Fader / Slider
    ========================================================================== */
 
 .k-output-content {
@@ -608,40 +632,112 @@ body {
   align-items: center;
   justify-content: center;
   height: 100%;
-  gap: 10px;
+  gap: 12px;
+  padding: 6px 4px;
 }
 
-.kontakt-knob-container {
-  width: 64px;
-  height: 64px;
+.k-fader-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.k-fader-scale {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--k-gray-dim);
+  padding: 0 4px;
+  user-select: none;
+}
+
+.k-fader-track-wrap {
+  width: 100%;
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
-.kontakt-rotary-knob {
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, #2e343f 0%, #1a1e24 75%, #0e1012 100%);
-  border: 2px solid #3a4250;
-  box-shadow: 
-    0 6px 14px rgba(0, 0, 0, 0.7),
-    inset 0 1px 1px rgba(255, 255, 255, 0.2);
-  cursor: ns-resize;
-  position: relative;
-  transition: transform 0.05s linear;
-  display: flex;
-  justify-content: center;
-}
-
-.k-knob-tick {
-  width: 3px;
+.k-fader-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
   height: 10px;
-  background: var(--k-orange);
-  border-radius: 1px;
-  margin-top: 4px;
-  box-shadow: 0 0 6px var(--k-orange-glow);
+  border-radius: 5px;
+  background: linear-gradient(
+    90deg,
+    #ff5500 0%,
+    #ffaa33 var(--fader-pct, 70%),
+    #14171d var(--fader-pct, 70%),
+    #14171d 100%
+  );
+  border: 1px solid #2e3540;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.k-fader-slider:hover {
+  border-color: #4f596b;
+}
+
+.k-fader-slider:focus-visible {
+  outline: 2px solid var(--k-orange);
+  outline-offset: 2px;
+}
+
+/* WebKit Slider Thumb (Chrome, Edge, Safari) */
+.k-fader-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 28px;
+  border-radius: 4px;
+  background: 
+    linear-gradient(to right, transparent calc(50% - 1px), #ff7733 calc(50% - 1px), #ff7733 calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(180deg, #3d4450 0%, #252a33 50%, #16191f 100%);
+  border: 1px solid #5a6475;
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 8px rgba(255, 85, 0, 0.3);
+  cursor: ew-resize;
+  transition: transform 0.1s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.k-fader-slider:hover::-webkit-slider-thumb {
+  border-color: #ffaa33;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 12px var(--k-orange-glow);
+}
+
+.k-fader-slider:active::-webkit-slider-thumb {
+  transform: scale(1.05);
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.9),
+    0 0 16px var(--k-orange-glow);
+}
+
+/* Firefox Slider Thumb */
+.k-fader-slider::-moz-range-thumb {
+  width: 22px;
+  height: 28px;
+  border-radius: 4px;
+  background: 
+    linear-gradient(to right, transparent calc(50% - 1px), #ff7733 calc(50% - 1px), #ff7733 calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(180deg, #3d4450 0%, #252a33 50%, #16191f 100%);
+  border: 1px solid #5a6475;
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 8px rgba(255, 85, 0, 0.3);
+  cursor: ew-resize;
 }
 
 .k-gain-display {
@@ -811,58 +907,61 @@ body {
   touch-action: none;
 }
 
-/* White Key: Kontakt Matte Finish */
+/* White Key: Authentic ivory white finish */
 .white-key {
   flex: 1;
-  background: linear-gradient(180deg, #f7f9fa 0%, #e2e6eb 90%, #d0d6de 100%);
-  border: 1px solid #7d8592;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f7f5 85%, #eae8e1 100%);
+  border: 1px solid #c2c3c6;
   border-top: none;
-  border-radius: 0 0 3px 3px;
+  border-radius: 0 0 4px 4px;
   position: relative;
   z-index: 1;
   box-shadow: 
-    inset 0 -1px 2px rgba(0, 0, 0, 0.15),
-    0 2px 4px rgba(0, 0, 0, 0.3);
+    inset 0 -2px 3px rgba(0, 0, 0, 0.12),
+    0 3px 5px rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 6px;
+  padding-bottom: 7px;
   transition: transform 0.04s ease-out, filter 0.04s, background 0.04s;
 }
 
 .white-key .key-label {
   font-size: 9px;
   font-weight: 700;
-  color: #8c95a3;
+  color: #7b8089;
   font-family: 'JetBrains Mono', monospace;
   pointer-events: none;
 }
 
 .white-key:active,
 .white-key.is-pressed {
-  background: linear-gradient(180deg, #dce2e8 0%, #cbd3dc 100%);
+  background: linear-gradient(180deg, #e7e7e5 0%, #d8d8d3 100%);
   transform: translateY(2px);
-  filter: brightness(0.9);
+  filter: brightness(0.95);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .white-key.external-midi {
-  background: linear-gradient(180deg, #ffe5d6 0%, #ffb38a 100%) !important;
+  background: linear-gradient(180deg, #ffe0b2 0%, #ffb74d 100%) !important;
   box-shadow: 0 0 10px var(--k-orange-glow) !important;
 }
 
-/* Black Key: Modern Sleek Ebony */
+/* Black Key (Accidentals / Sostenidos): Wider, touchable and elevated ebony keys */
 .black-key {
   position: absolute;
   top: 0;
-  right: -15%;
-  width: 30%;
-  height: 60%;
-  background: linear-gradient(180deg, #2a2e36 0%, #16191e 75%, #0f1114 100%);
-  border-radius: 0 0 2px 2px;
-  border: 1px solid #090a0c;
-  border-top: none;
-  z-index: 3;
-  box-shadow: -2px 3px 5px rgba(0, 0, 0, 0.7);
+  right: -30%;
+  width: 60%;
+  height: 64%;
+  background: linear-gradient(180deg, #32353b 0%, #17181c 60%, #0d0e10 100%);
+  border-radius: 0 0 3px 3px;
+  border: 1px solid #000000;
+  border-top: 1px solid #4a4e58;
+  z-index: 10;
+  box-shadow: 
+    -3px 4px 7px rgba(0, 0, 0, 0.75),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
   transition: transform 0.04s ease-out, filter 0.04s;
 }
 
@@ -870,11 +969,12 @@ body {
 .black-key.is-pressed {
   transform: translateY(2px);
   filter: brightness(0.75);
+  background: linear-gradient(180deg, #222428 0%, #0c0d0e 100%);
 }
 
 .black-key.external-midi {
-  background: linear-gradient(180deg, #a83d00 0%, #612300 100%) !important;
-  box-shadow: 0 0 10px var(--k-orange-glow) !important;
+  background: linear-gradient(180deg, #ff8c00 0%, #cc5200 100%) !important;
+  box-shadow: 0 0 12px var(--k-orange-glow) !important;
 }
 
 /* ==========================================================================
@@ -1249,25 +1349,37 @@ body {
   gap: 7px;
 }
 
-.kontakt-knob-container {
-  width: 56px;
-  height: 56px;
+.k-fader-scale {
+  color: #7b7156;
 }
 
-.kontakt-rotary-knob {
-  width: 46px;
-  height: 46px;
-  border: 1px solid #4d4937;
-  border-radius: 2px;
-  background: linear-gradient(145deg, #292817, #121313 72%);
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
+.k-fader-slider {
+  background: linear-gradient(
+    90deg,
+    #ffc400 0%,
+    #e8bd21 var(--fader-pct, 70%),
+    #131416 var(--fader-pct, 70%),
+    #131416 100%
+  );
+  border-color: #3b3a30;
 }
 
-.k-knob-tick {
-  width: 2px;
-  height: 9px;
-  background: #ffcf22;
-  box-shadow: 0 0 6px var(--k-orange-glow);
+.k-fader-slider::-webkit-slider-thumb {
+  background: 
+    linear-gradient(to right, transparent calc(50% - 1px), #ffcf22 calc(50% - 1px), #ffcf22 calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(180deg, #3d3925 0%, #242217 50%, #13120d 100%);
+  border-color: #6d5b1d;
+  box-shadow: 
+    0 4px 10px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 8px rgba(255, 207, 34, 0.25);
+}
+
+.k-fader-slider::-moz-range-thumb {
+  background: 
+    linear-gradient(to right, transparent calc(50% - 1px), #ffcf22 calc(50% - 1px), #ffcf22 calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(180deg, #3d3925 0%, #242217 50%, #13120d 100%);
+  border-color: #6d5b1d;
 }
 
 .k-db-text {
@@ -1355,45 +1467,12 @@ body {
 
 .piano-keybed {
   height: clamp(120px, 20vw, 165px);
-  border: 1px solid #373838;
-  background: #121313;
-  box-shadow: none;
-}
-
-.white-key {
-  border-color: #333434;
-  border-top: 1px solid #333434;
-  border-radius: 0;
-  background: linear-gradient(180deg, #222323 0%, #171818 100%);
-  box-shadow: inset 0 -1px #0b0c0d;
+  border: 1px solid #1a1c20;
+  background: #08090a;
 }
 
 .white-key .key-label {
-  color: #85847d;
   font-size: 8px;
-}
-
-.white-key:active,
-.white-key.is-pressed {
-  background: linear-gradient(180deg, #57460e, #332909);
-  box-shadow: inset 0 0 12px rgba(255, 196, 0, 0.18);
-}
-
-.white-key.external-midi {
-  background: linear-gradient(180deg, #66520e, #352b0c) !important;
-  box-shadow: inset 0 0 10px rgba(255, 196, 0, 0.22) !important;
-}
-
-.black-key {
-  border-color: #080909;
-  border-radius: 0 0 2px 2px;
-  background: linear-gradient(180deg, #090a0a, #020303 90%);
-  box-shadow: 0 2px 4px #000;
-}
-
-.black-key.external-midi {
-  background: linear-gradient(180deg, #b28c12, #54420b) !important;
-  box-shadow: 0 0 8px rgba(255, 196, 0, 0.32) !important;
 }
 
 .kontakt-rack-footer {
@@ -1409,13 +1488,13 @@ body {
 
 button,
 select,
-.kontakt-rotary-knob {
+.k-fader-slider {
   -webkit-tap-highlight-color: transparent;
 }
 
 button:focus-visible,
 select:focus-visible,
-.kontakt-rotary-knob:focus-visible {
+.k-fader-slider:focus-visible {
   outline: 2px solid #e8bd21;
   outline-offset: 2px;
 }

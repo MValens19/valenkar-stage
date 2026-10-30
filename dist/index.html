@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Valenkar Stage · Kontakt Sampler Workstation</title>
+  <title>Valenkar Live · Sampler Workstation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="./assets/index-CZf9iC-L.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DGTuummm.css">
+  <script type="module" crossorigin src="./assets/index-C4HUALvH.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DtEDTzR0.css">
 </head>
 <body>
   <div class="kontakt-rack-wrapper">
@@ -17,13 +17,11 @@
       <div class="host-left">
         <div class="kontakt-logo">
           <span class="logo-circle"></span>
-          <span class="logo-text">KONTAKT</span>
-          <span class="logo-version">7.8</span>
+          <span class="logo-text">VALENKAR</span>
+          <span class="logo-version">LIVE</span>
         </div>
         <div class="host-tabs">
-          <button class="host-tab active">MAIN</button>
-          <button class="host-tab">RACK</button>
-          <button class="host-tab">BROWSER</button>
+          <span class="host-tab active">MIXER &amp; LIVE</span>
         </div>
       </div>
 
@@ -48,12 +46,10 @@
       </div>
 
       <div class="host-right">
-        <button id="start-engine-btn" class="kontakt-power-button" title="Activar motor de audio y MIDI">
-          <svg class="p-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M12 2v10M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-          </svg>
-          <span id="power-btn-text">AUDIO ON</span>
-        </button>
+        <div class="host-live-badge" title="Motor de audio activo en tiempo real">
+          <span class="live-dot"></span>
+          <span>STAGE ACTIVE</span>
+        </div>
       </div>
     </header>
 
@@ -89,8 +85,8 @@
           <!-- Column 1: Preset & Sample Bank Navigator -->
           <div class="k-panel k-panel-browser">
             <div class="k-panel-header">
-              <span class="k-ph-title">INSTRUMENT BROWSER</span>
-              <span class="k-ph-badge">LIBRARY</span>
+              <span class="k-ph-title">INSTRUMENTO</span>
+              <span class="k-ph-badge">BIBLIOTECA</span>
             </div>
 
             <div class="k-browser-content">
@@ -104,7 +100,7 @@
               <div class="k-loader-status-card">
                 <div class="k-status-line">
                   <span class="k-loader-lbl">STATUS:</span>
-                  <span class="k-loader-val" id="preset-load-info">Inicia el motor de audio</span>
+                  <span class="k-loader-val" id="preset-load-info">Cargando librería...</span>
                 </div>
                 <div class="k-progress-track" id="oled-progress-wrap">
                   <div class="k-progress-fill" id="oled-progress-bar"></div>
@@ -125,8 +121,8 @@
           <!-- Column 2: Voice Monitor & Dynamic Peak VU Meters -->
           <div class="k-panel k-panel-meters">
             <div class="k-panel-header">
-              <span class="k-ph-title">VOICES & DYNAMICS</span>
-              <span class="k-ph-badge">WASMWORKLET</span>
+              <span class="k-ph-title">SEÑAL &amp; VOCES</span>
+              <span class="k-ph-badge">AUDIO</span>
             </div>
 
             <div class="k-meters-content">
@@ -160,22 +156,36 @@
             </div>
           </div>
 
-          <!-- Column 3: Kontakt Precision Rotary Output Knob -->
+          <!-- Column 3: Kontakt Precision Output Slider / Fader -->
           <div class="k-panel k-panel-output">
             <div class="k-panel-header">
-              <span class="k-ph-title">MASTER OUTPUT</span>
-              <span class="k-ph-badge">GAIN</span>
+              <span class="k-ph-title">SALIDA MASTER</span>
+              <span class="k-ph-badge">FADER</span>
             </div>
 
             <div class="k-output-content">
-              <div class="kontakt-knob-container">
-                <div class="kontakt-rotary-knob" id="master-knob" title="Arrastra verticalmente para ajustar volumen">
-                  <div class="k-knob-tick"></div>
+              <div class="k-fader-container">
+                <div class="k-fader-scale">
+                  <span>-∞</span>
+                  <span>-18</span>
+                  <span>-6</span>
+                  <span>0 dB</span>
+                </div>
+                <div class="k-fader-track-wrap">
+                  <input
+                    id="volume-range"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="0.7"
+                    class="k-fader-slider"
+                    aria-label="Volumen Master"
+                  />
                 </div>
               </div>
 
               <div class="k-gain-display">
-                <input id="volume-range" type="range" min="0" max="1" step="0.01" value="0.7" class="visually-hidden" />
                 <span class="k-db-text" id="gain-readout">-3.1 dB</span>
                 <span class="gain-sublabel">VOLUME (70%)</span>
               </div>

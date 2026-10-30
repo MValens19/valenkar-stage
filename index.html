@@ -45,12 +45,10 @@
       </div>
 
       <div class="host-right">
-        <button id="start-engine-btn" class="kontakt-power-button" title="Activar motor de audio y MIDI">
-          <svg class="p-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M12 2v10M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-          </svg>
-          <span id="power-btn-text">AUDIO ON</span>
-        </button>
+        <div class="host-live-badge" title="Motor de audio activo en tiempo real">
+          <span class="live-dot"></span>
+          <span>STAGE ACTIVE</span>
+        </div>
       </div>
     </header>
 
@@ -101,7 +99,7 @@
               <div class="k-loader-status-card">
                 <div class="k-status-line">
                   <span class="k-loader-lbl">STATUS:</span>
-                  <span class="k-loader-val" id="preset-load-info">Inicia el motor de audio</span>
+                  <span class="k-loader-val" id="preset-load-info">Cargando librería...</span>
                 </div>
                 <div class="k-progress-track" id="oled-progress-wrap">
                   <div class="k-progress-fill" id="oled-progress-bar"></div>
@@ -157,22 +155,36 @@
             </div>
           </div>
 
-          <!-- Column 3: Kontakt Precision Rotary Output Knob -->
+          <!-- Column 3: Kontakt Precision Output Slider / Fader -->
           <div class="k-panel k-panel-output">
             <div class="k-panel-header">
               <span class="k-ph-title">SALIDA MASTER</span>
-              <span class="k-ph-badge">VOLUMEN</span>
+              <span class="k-ph-badge">FADER</span>
             </div>
 
             <div class="k-output-content">
-              <div class="kontakt-knob-container">
-                <div class="kontakt-rotary-knob" id="master-knob" title="Arrastra verticalmente para ajustar volumen">
-                  <div class="k-knob-tick"></div>
+              <div class="k-fader-container">
+                <div class="k-fader-scale">
+                  <span>-∞</span>
+                  <span>-18</span>
+                  <span>-6</span>
+                  <span>0 dB</span>
+                </div>
+                <div class="k-fader-track-wrap">
+                  <input
+                    id="volume-range"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value="0.7"
+                    class="k-fader-slider"
+                    aria-label="Volumen Master"
+                  />
                 </div>
               </div>
 
               <div class="k-gain-display">
-                <input id="volume-range" type="range" min="0" max="1" step="0.01" value="0.7" class="visually-hidden" />
                 <span class="k-db-text" id="gain-readout">-3.1 dB</span>
                 <span class="gain-sublabel">VOLUME (70%)</span>
               </div>

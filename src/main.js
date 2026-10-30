@@ -14,6 +14,9 @@ let keyboard = null;
 // Gestores unificados de entrada (Teclado virtual y Teclado MIDI externo)
 const handlers = {
   onNoteOn: ({ note, velocity }) => {
+    if (engine.ctx && engine.ctx.state === "suspended") {
+      engine.ctx.resume();
+    }
     engine.noteOn(note, velocity);
     keyboard?.setNoteActive(note, true, velocity);
   },
@@ -79,7 +82,7 @@ $("oct-up").addEventListener("click", () => {
   }
 });
 
-// Control rotatorio / slider de volumen
+// Control slider / fader de volumen
 let currentGain = 0.7;
 function updateVolume(val) {
   currentGain = Math.max(0, Math.min(1, val));
@@ -89,38 +92,24 @@ function updateVolume(val) {
   const db = currentGain > 0 ? (20 * Math.log10(currentGain)).toFixed(1) : "-inf";
   const pct = Math.round(currentGain * 100);
   
-  $("gain-readout").textContent = `${db} dB`;
+  const gainReadout = $("gain-readout");
+  if (gainReadout) gainReadout.textContent = `${db} dB`;
   const sublabel = document.querySelector(".gain-sublabel");
   if (sublabel) sublabel.textContent = `VOLUME (${pct}%)`;
 
-  // Rotar visualmente el knob (-135deg a +135deg)
-  const deg = -135 + currentGain * 270;
-  $("master-knob").style.transform = `rotate(${deg}deg)`;
+  const slider = $("volume-range");
+  if (slider) {
+    if (Number(slider.value) !== currentGain) {
+      slider.value = currentGain;
+    }
+    slider.style.setProperty("--fader-pct", `${pct}%`);
+  }
 }
 
-$("volume-range").addEventListener("input", (e) => updateVolume(Number(e.target.value)));
-
-// Interacción por arrastre en el knob dorado
-let isDraggingKnob = false;
-let startY = 0;
-let startGain = 0.7;
-
-$("master-knob").addEventListener("pointerdown", (e) => {
-  isDraggingKnob = true;
-  startY = e.clientY;
-  startGain = currentGain;
-  $("master-knob").setPointerCapture(e.pointerId);
-});
-
-$("master-knob").addEventListener("pointermove", (e) => {
-  if (!isDraggingKnob) return;
-  const delta = (startY - e.clientY) / 150; // arrastrar hacia arriba sube volumen
-  updateVolume(startGain + delta);
-});
-
-$("master-knob").addEventListener("pointerup", (e) => {
-  isDraggingKnob = false;
-});
+const volumeSlider = $("volume-range");
+if (volumeSlider) {
+  volumeSlider.addEventListener("input", (e) => updateVolume(Number(e.target.value)));
+}
 
 updateVolume(0.7);
 
@@ -158,14 +147,88 @@ engine.onMetrics = ({ voices, peak }) => {
 function refreshTelemetry() {
   const l = engine.getLatency();
   if (!l) return;
-  $("lat-total").textContent = `${l.total.toFixed(1)} ms`;
-  $("lat-breakdown").textContent = `(base ${l.base.toFixed(1)} / salida ${l.output.toFixed(1)})`;
-  $("tele-sr").textContent = `${l.sampleRate} Hz`;
+  const latTotal = $("lat-total");
+  const latBreakdown = $("lat-breakdown");
+  const teleSr = $("tele-sr");
+
+  if (latTotal) latTotal.textContent = `${l.total.toFixed(1)} ms`;
+  if (latBreakdown) latBreakdown.textContent = `(base ${l.base.toFixed(1)} / salida ${l.output.toFixed(1)})`;
+  if (teleSr) teleSr.textContent = `${l.sampleRate} Hz`;
+}
+
+// Iniciar automáticamente el motor de audio y MIDI
+let engineStartPromise = null;
+
+async function startAudioSystem() {
+  if (engineStartPromise) return engineStartPromise;
+
+  engineStartPromise = (async () => {
+    const led = $("engine-led");
+    const statusText = $("engine-status-text");
+
+    if (statusText) statusText.textContent = "INICIALIZANDO...";
+
+    try {
+      await engine.start();
+      if (led) led.classList.add("active");
+      if (statusText) statusText.textContent = "MOTOR ACTIVO";
+
+      refreshTelemetry();
+      setInterval(refreshTelemetry, 2000);
+    } catch (err) {
+      console.error("Error al iniciar motor de audio:", err);
+      if (statusText) statusText.textContent = "ERROR MOTOR";
+      return false;
+    }
+
+    // Conectar MIDI automáticamente
+    try {
+      await initMIDI({
+        ...handlers,
+        onDevices: (names) => {
+          const devLabel = $("midi-device-label");
+          if (devLabel) {
+            devLabel.textContent = names.length
+              ? names.join(", ")
+              : "Sin teclado físico (Teclado virtual activo)";
+          }
+        },
+        onError: (msg) => {
+          const devLabel = $("midi-device-label");
+          if (devLabel) devLabel.textContent = msg;
+        },
+      });
+    } catch (err) {
+      console.warn("Error inicializando MIDI:", err);
+    }
+
+    return true;
+  })();
+
+  return engineStartPromise;
+}
+
+// Desbloqueo de AudioContext ante cualquier gesto del usuario
+function setupAudioUnlock() {
+  const unlock = async () => {
+    if (engine.ctx && engine.ctx.state === "suspended") {
+      try {
+        await engine.ctx.resume();
+      } catch (e) {
+        console.warn("No se pudo reanudar AudioContext:", e);
+      }
+    }
+  };
+
+  window.addEventListener("pointerdown", unlock, { passive: true });
+  window.addEventListener("keydown", unlock, { passive: true });
+  window.addEventListener("touchstart", unlock, { passive: true });
 }
 
 // Catálogo de instrumentos SFZ
 let currentInstrumentPath = "library/piano/piano.sfz";
 let catalogList = [];
+let currentLoadId = 0;
 
 async function populateLibraryMenu() {
   try {
@@ -174,16 +237,21 @@ async function populateLibraryMenu() {
     catalogList = await res.json();
     if (!Array.isArray(catalogList) || catalogList.length === 0) return;
 
-    $("instrument-select").innerHTML = "";
+    const select = $("instrument-select");
+    if (!select) return;
+    select.innerHTML = "";
     catalogList.forEach((item) => {
       const opt = document.createElement("option");
       opt.value = item.path;
       opt.textContent = item.name;
       opt.dataset.category = item.category || "VINTAGE KEYS";
-      $("instrument-select").appendChild(opt);
+      select.appendChild(opt);
     });
-    currentInstrumentPath = $("instrument-select").value;
+    currentInstrumentPath = select.value;
     updateOledPresetDetails();
+
+    // Cargar automáticamente el primer instrumento seleccionado
+    loadCurrentInstrument();
   } catch (err) {
     console.warn("No se pudo cargar el catálogo de librerías:", err);
   }
@@ -191,97 +259,68 @@ async function populateLibraryMenu() {
 
 function updateOledPresetDetails() {
   const sel = $("instrument-select");
+  if (!sel) return;
   const selectedOpt = sel.options[sel.selectedIndex];
   if (!selectedOpt) return;
 
-  $("current-preset-name").textContent = selectedOpt.textContent;
-  $("preset-category").textContent = (selectedOpt.dataset.category || "CONCERT GRAND").toUpperCase();
+  const presetName = $("current-preset-name");
+  if (presetName) presetName.textContent = selectedOpt.textContent;
+  const presetCat = $("preset-category");
+  if (presetCat) presetCat.textContent = (selectedOpt.dataset.category || "CONCERT GRAND").toUpperCase();
 }
 
-populateLibraryMenu();
-
-$("instrument-select").addEventListener("change", (e) => {
+$("instrument-select")?.addEventListener("change", (e) => {
   currentInstrumentPath = e.target.value;
   updateOledPresetDetails();
-  if (engine.ready) {
-    loadCurrentInstrument();
-  }
+  // Carga automática al seleccionar instrumento en la biblioteca
+  loadCurrentInstrument();
 });
 
-$("reload-preset-btn").addEventListener("click", () => {
-  if (engine.ready) loadCurrentInstrument();
+$("reload-preset-btn")?.addEventListener("click", () => {
+  loadCurrentInstrument();
 });
 
 async function loadCurrentInstrument() {
+  const loadId = ++currentLoadId;
+  const ok = await startAudioSystem();
+  if (!ok || loadId !== currentLoadId) return;
+
   const sel = $("instrument-select");
-  const name = sel.options[sel.selectedIndex]?.textContent || "Instrumento";
-  $("preset-load-info").textContent = `Cargando ${name}...`;
+  const name = sel ? (sel.options[sel.selectedIndex]?.textContent || "Instrumento") : "Instrumento";
+  const infoEl = $("preset-load-info");
+  if (infoEl) infoEl.textContent = `Cargando ${name}...`;
   const pBar = $("oled-progress-bar");
   if (pBar) pBar.style.width = "5%";
 
   try {
     const info = await engine.loadSFZ(`${import.meta.env.BASE_URL}${currentInstrumentPath}`, {
       onProgress: (n, total, layer, fromCache) => {
+        if (loadId !== currentLoadId) return;
         const pct = Math.round((n / total) * 100);
         if (pBar) pBar.style.width = `${pct}%`;
         const sourceLabel = fromCache ? "Memoria local" : "Descargando";
-        $("preset-load-info").textContent = `${sourceLabel}: ${layer} (${n}/${total})`;
+        if (infoEl) infoEl.textContent = `${sourceLabel}: ${layer} (${n}/${total})`;
       },
     });
 
+    if (loadId !== currentLoadId) return;
+
     if (pBar) pBar.style.width = "100%";
     setTimeout(() => {
-      if (pBar) pBar.style.width = "0%";
+      if (pBar && loadId === currentLoadId) pBar.style.width = "0%";
     }, 1200);
 
-    $("preset-load-info").textContent = `Listo · ${info.count} samples (${info.seconds.toFixed(0)}s audio)`;
-    $("cache-status").textContent = `${info.count} muestras activas`;
+    if (infoEl) infoEl.textContent = `Listo · ${info.count} samples (${info.seconds.toFixed(0)}s audio)`;
+    const cacheEl = $("cache-status");
+    if (cacheEl) cacheEl.textContent = `${info.count} muestras activas`;
   } catch (err) {
-    $("preset-load-info").textContent = `Error: ${err.message}`;
+    if (loadId !== currentLoadId) return;
+    if (infoEl) infoEl.textContent = `Error: ${err.message}`;
     if (pBar) pBar.style.width = "0%";
   }
 }
 
-// Iniciar Motor de Audio y MIDI
-$("start-engine-btn").addEventListener("click", async () => {
-  if (engine.ready) return;
-
-  const btn = $("start-engine-btn");
-  const led = $("engine-led");
-  const statusText = $("engine-status-text");
-
-  btn.disabled = true;
-  statusText.textContent = "INICIALIZANDO...";
-
-  try {
-    await engine.start();
-    led.classList.add("active");
-    btn.classList.add("engine-running");
-    $("power-btn-text").textContent = "MOTOR EN LÍNEA";
-    statusText.textContent = "MOTOR ACTIVO";
-
-    refreshTelemetry();
-    setInterval(refreshTelemetry, 2000);
-  } catch (err) {
-    statusText.textContent = "ERROR MOTOR";
-    alert("Error al iniciar Web Audio: " + err.message);
-    btn.disabled = false;
-    return;
-  }
-
-  // Cargar el instrumento
-  await loadCurrentInstrument();
-
-  // Conectar MIDI
-  await initMIDI({
-    ...handlers,
-    onDevices: (names) => {
-      $("midi-device-label").textContent = names.length
-        ? names.join(", ")
-        : "Sin teclado físico (Teclado virtual activo)";
-    },
-    onError: (msg) => {
-      $("midi-device-label").textContent = msg;
-    },
-  });
-});
+// Inicialización automática
+setupAudioUnlock();
+startAudioSystem();
+populateLibraryMenu();
