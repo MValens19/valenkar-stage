@@ -908,3 +908,692 @@ body {
 .f-sep {
   opacity: 0.3;
 }
+
+/* Valenkar Live performance-console layout */
+:root {
+  --k-bg-black: #08090a;
+  --k-rack-chassis: #101112;
+  --k-panel-bg: #151617;
+  --k-panel-inner: #0c0d0e;
+  --k-border-dark: #343536;
+  --k-border-subtle: #454647;
+  --k-orange: #ffc400;
+  --k-orange-glow: rgba(255, 196, 0, 0.25);
+  --k-cyan: #d3aa29;
+  --k-white: #f0f0ee;
+  --k-gray-text: #aaa9a4;
+  --k-gray-dim: #777771;
+}
+
+body {
+  min-height: 100vh;
+  align-items: flex-start;
+  padding: clamp(8px, 2vw, 24px);
+  background:
+    radial-gradient(ellipse at 50% -20%, #20201b 0, transparent 48%),
+    #08090a;
+}
+
+.kontakt-rack-wrapper {
+  max-width: 1080px;
+  border-color: #3a3b3b;
+  border-radius: 2px;
+  background: #101112;
+  box-shadow: 0 18px 55px #000;
+}
+
+.kontakt-host-bar {
+  min-height: 54px;
+  height: auto;
+  padding: 8px 14px;
+  gap: 12px;
+  background: #0b0c0d;
+}
+
+.host-left {
+  gap: 14px;
+}
+
+.kontakt-logo {
+  gap: 7px;
+}
+
+.logo-circle {
+  width: 22px;
+  height: 22px;
+  border: 1px solid #6f5b11;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #ffc400 0 26%, #171511 27%);
+  box-shadow: none;
+}
+
+.logo-text {
+  font-size: 12px;
+  letter-spacing: 1.4px;
+}
+
+.logo-version {
+  border-radius: 1px;
+  background: #332a0b;
+  color: #ffd84c;
+  letter-spacing: 0.5px;
+}
+
+.host-tab {
+  padding: 6px 9px;
+  border-radius: 1px;
+  color: #8d8c86;
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.host-tab.active {
+  background: #171819;
+  color: #f3c52f;
+}
+
+.master-cpu-cluster {
+  gap: 13px;
+  padding: 5px 9px;
+  border-color: #303131;
+  border-radius: 1px;
+  background: #111213;
+}
+
+.cpu-stat {
+  gap: 6px;
+}
+
+.cpu-label {
+  font-size: 8px;
+  letter-spacing: 0.7px;
+}
+
+.engine-state-pill,
+.cpu-val {
+  font-size: 10px;
+}
+
+.led-dot.active {
+  background: #ffc400;
+  box-shadow: 0 0 7px rgba(255, 196, 0, 0.7);
+}
+
+.kontakt-power-button {
+  min-height: 34px;
+  border-color: #625213;
+  border-radius: 1px;
+  background: #241e0b;
+  color: #ffd84c;
+  font-size: 9px;
+}
+
+.kontakt-power-button:hover,
+.kontakt-power-button.engine-running {
+  border-color: #f1bd16;
+  background: #dca900;
+  color: #111;
+  box-shadow: 0 0 12px var(--k-orange-glow);
+}
+
+.slot-header-strip {
+  min-height: 58px;
+  padding: 8px 14px;
+  border-top: 1px solid #343536;
+  border-bottom: 1px solid #393a39;
+  background: #191a1b;
+}
+
+.slot-badge {
+  border-color: #484235;
+  border-radius: 1px;
+  color: #ffd43b;
+}
+
+.slot-title {
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+.slot-sub {
+  font-size: 9px;
+  letter-spacing: 0.7px;
+}
+
+.midi-ch-tag {
+  border-color: #353637;
+  border-radius: 1px;
+  background: #111213;
+}
+
+.tag-val {
+  color: #f2c52e;
+}
+
+.slot-body-panel {
+  padding: 12px;
+  border-bottom: 1px solid #353637;
+  background: #101112;
+}
+
+.kontakt-grid {
+  grid-template-columns: minmax(0, 1.45fr) minmax(190px, 1fr) minmax(135px, 0.72fr);
+  gap: 8px;
+}
+
+.k-panel {
+  min-width: 0;
+  padding: 10px;
+  border-color: #3a3b3b;
+  border-radius: 1px;
+  background: #111213;
+  box-shadow: none;
+}
+
+.k-panel-header {
+  min-height: 21px;
+  padding-bottom: 7px;
+  border-bottom-color: #303131;
+  margin-bottom: 9px;
+}
+
+.k-ph-title {
+  color: #c4c2b9;
+  font-size: 9px;
+  letter-spacing: 0.9px;
+}
+
+.k-ph-badge {
+  color: #e4b51d;
+  font-size: 8px;
+}
+
+.k-browser-content {
+  gap: 8px;
+}
+
+.k-select {
+  min-height: 36px;
+  padding: 8px 30px 8px 10px;
+  border-color: #4a4b49;
+  border-radius: 1px;
+  background: #1a1b1b;
+  font-size: 11px;
+}
+
+.k-select:focus {
+  border-color: #e5b715;
+  box-shadow: 0 0 0 1px rgba(229, 183, 21, 0.18);
+}
+
+.k-select-arrow {
+  color: #eac22b;
+}
+
+.k-loader-status-card,
+.k-tele-block,
+.k-vu-wrapper {
+  border-color: #333434;
+  border-radius: 1px;
+  background: #0b0c0d;
+}
+
+.k-loader-status-card {
+  padding: 8px;
+  gap: 7px;
+}
+
+.k-status-line {
+  min-width: 0;
+  font-size: 9px;
+}
+
+.k-loader-val {
+  color: #c8a93a;
+}
+
+.k-progress-track {
+  border-radius: 0;
+  background: #252525;
+}
+
+.k-progress-fill {
+  background: #f0bd18;
+  box-shadow: 0 0 7px var(--k-orange-glow);
+}
+
+.k-button-row {
+  justify-content: flex-start;
+}
+
+.k-mini-btn {
+  min-height: 30px;
+  border-color: #484234;
+  border-radius: 1px;
+  background: #201b0b;
+  color: #e8c43e;
+  font-size: 9px;
+}
+
+.k-mini-btn:hover {
+  border-color: #d5ac20;
+  background: #30270c;
+  color: #fff0b2;
+}
+
+.k-meters-content {
+  gap: 8px;
+}
+
+.k-tele-cluster {
+  gap: 6px;
+}
+
+.k-tele-block {
+  min-height: 57px;
+  padding: 7px 5px;
+}
+
+.k-tb-lbl {
+  font-size: 7px;
+  letter-spacing: 0.7px;
+}
+
+.k-tb-val {
+  font-size: 14px;
+}
+
+.k-tb-val strong,
+.k-sustain-pill.active {
+  color: #ffd22e;
+}
+
+.k-tb-val strong {
+  color: #f4c51c;
+}
+
+.k-sustain-pill {
+  border: 1px solid #3b3b38;
+  border-radius: 1px;
+  background: #1b1c1c;
+  font-size: 9px;
+}
+
+.k-sustain-pill.active {
+  border-color: #c69e12;
+  background: #4a3b0c;
+  box-shadow: 0 0 8px rgba(255, 196, 0, 0.16);
+}
+
+.k-vu-wrapper {
+  gap: 7px;
+  padding: 8px;
+}
+
+.k-vu-trough {
+  height: 8px;
+  border-radius: 0;
+  background: #222323;
+}
+
+.k-vu-fill {
+  background: linear-gradient(90deg, #8b761f, #f1c51e 78%, #ffe890);
+}
+
+.k-vu-peak {
+  width: 1px;
+  background: #fff3bb;
+}
+
+.k-output-content {
+  gap: 7px;
+}
+
+.kontakt-knob-container {
+  width: 56px;
+  height: 56px;
+}
+
+.kontakt-rotary-knob {
+  width: 46px;
+  height: 46px;
+  border: 1px solid #4d4937;
+  border-radius: 2px;
+  background: linear-gradient(145deg, #292817, #121313 72%);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.k-knob-tick {
+  width: 2px;
+  height: 9px;
+  background: #ffcf22;
+  box-shadow: 0 0 6px var(--k-orange-glow);
+}
+
+.k-db-text {
+  color: #f4cb32;
+  font-size: 12px;
+}
+
+.gain-sublabel {
+  font-size: 8px;
+  letter-spacing: 0.7px;
+}
+
+.k-lower-bar {
+  margin-top: 9px;
+  padding: 7px 9px;
+  border-color: #343535;
+  border-radius: 1px;
+  background: #0b0c0d;
+}
+
+.k-midi-input-indicator,
+.k-midi-details,
+.k-keyboard-toolbar {
+  gap: 7px;
+}
+
+.k-midi-icon {
+  border-color: #5e4d14;
+  border-radius: 1px;
+  background: #26200d;
+  color: #e8c334;
+}
+
+.k-midi-label,
+.k-kt-caption {
+  font-size: 8px;
+  letter-spacing: 0.6px;
+}
+
+.k-midi-val {
+  max-width: 280px;
+  font-size: 9px;
+}
+
+.k-octave-group {
+  border-color: #3a3b3a;
+  border-radius: 1px;
+  background: #151616;
+}
+
+.oct-btn {
+  padding: 5px 8px;
+  font-size: 9px;
+}
+
+.oct-btn.active {
+  background: #d7aa0d;
+  color: #111;
+}
+
+.transpose-btn {
+  border-color: #3b3c3b;
+  border-radius: 1px;
+  background: #1b1c1c;
+  font-size: 9px;
+}
+
+.transpose-btn:hover {
+  border-color: #c9a219;
+  color: #ffe487;
+}
+
+.current-range-tag {
+  border-color: #38362d;
+  border-radius: 1px;
+  color: #e8c43b;
+  font-size: 9px;
+}
+
+.kontakt-keybed-wrapper {
+  padding: 0 12px 12px;
+  border-bottom-color: #363737;
+  background: #0b0c0d;
+}
+
+.piano-keybed {
+  height: clamp(120px, 20vw, 165px);
+  border: 1px solid #373838;
+  background: #121313;
+  box-shadow: none;
+}
+
+.white-key {
+  border-color: #333434;
+  border-top: 1px solid #333434;
+  border-radius: 0;
+  background: linear-gradient(180deg, #222323 0%, #171818 100%);
+  box-shadow: inset 0 -1px #0b0c0d;
+}
+
+.white-key .key-label {
+  color: #85847d;
+  font-size: 8px;
+}
+
+.white-key:active,
+.white-key.is-pressed {
+  background: linear-gradient(180deg, #57460e, #332909);
+  box-shadow: inset 0 0 12px rgba(255, 196, 0, 0.18);
+}
+
+.white-key.external-midi {
+  background: linear-gradient(180deg, #66520e, #352b0c) !important;
+  box-shadow: inset 0 0 10px rgba(255, 196, 0, 0.22) !important;
+}
+
+.black-key {
+  border-color: #080909;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(180deg, #090a0a, #020303 90%);
+  box-shadow: 0 2px 4px #000;
+}
+
+.black-key.external-midi {
+  background: linear-gradient(180deg, #b28c12, #54420b) !important;
+  box-shadow: 0 0 8px rgba(255, 196, 0, 0.32) !important;
+}
+
+.kontakt-rack-footer {
+  min-height: 32px;
+  padding: 7px 12px;
+  background: #0b0c0d;
+  font-size: 8px;
+}
+
+.f-dot {
+  background: #e8bd21;
+}
+
+button,
+select,
+.kontakt-rotary-knob {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+select:focus-visible,
+.kontakt-rotary-knob:focus-visible {
+  outline: 2px solid #e8bd21;
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  body {
+    padding: 6px;
+  }
+
+  .kontakt-rack-wrapper {
+    width: 100%;
+  }
+
+  .kontakt-host-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 8px;
+  }
+
+  .host-left {
+    gap: 8px;
+  }
+
+  .host-center {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-width: 0;
+  }
+
+  .master-cpu-cluster {
+    justify-content: space-between;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .cpu-stat {
+    gap: 4px;
+  }
+
+  .cpu-label {
+    font-size: 7px;
+  }
+
+  .host-right {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .kontakt-power-button {
+    padding: 6px 8px;
+    font-size: 8px;
+  }
+
+  .slot-header-strip {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .slot-quick-controls {
+    gap: 4px;
+  }
+
+  .midi-ch-tag {
+    padding: 4px 5px;
+    gap: 4px;
+  }
+
+  .midi-ch-tag:first-child {
+    display: none;
+  }
+
+  .tag-lbl {
+    font-size: 7px;
+  }
+
+  .tag-val {
+    font-size: 8px;
+  }
+
+  .slot-body-panel {
+    padding: 8px;
+  }
+
+  .kontakt-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .k-panel-browser {
+    grid-column: 1 / -1;
+  }
+
+  .k-panel {
+    padding: 8px;
+  }
+
+  .k-panel-header {
+    margin-bottom: 7px;
+  }
+
+  .k-midi-val {
+    max-width: 165px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .k-lower-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .k-keyboard-toolbar {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+
+  .kontakt-keybed-wrapper {
+    padding: 0 8px 8px;
+  }
+
+  .piano-keybed {
+    height: clamp(112px, 30vw, 145px);
+  }
+
+  .kontakt-rack-footer {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 390px) {
+  .host-tabs {
+    display: none;
+  }
+
+  .master-cpu-cluster {
+    padding: 5px 6px;
+  }
+
+  .cpu-stat:last-child {
+    display: none;
+  }
+
+  .slot-title {
+    font-size: 11px;
+  }
+
+  .slot-sub {
+    font-size: 7px;
+  }
+
+  .k-kt-caption {
+    display: none;
+  }
+
+  .k-transpose-group {
+    gap: 3px;
+  }
+
+  .transpose-btn {
+    padding: 4px 5px;
+  }
+
+  .footer-right {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
