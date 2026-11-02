@@ -1,0 +1,119 @@
+{
+  "formato": "<Nota><Octava>_v<capa>.<ext>",
+  "capas": {
+    "v1": {
+      "velocity": [
+        1,
+        42
+      ],
+      "muestras": {
+        "21": "A0_v1.flac",
+        "24": "C1_v1.flac",
+        "27": "Ds1_v1.flac",
+        "30": "Fs1_v1.flac",
+        "33": "A1_v1.flac",
+        "36": "C2_v1.flac",
+        "39": "Ds2_v1.flac",
+        "42": "Fs2_v1.flac",
+        "45": "A2_v1.flac",
+        "48": "C3_v1.flac",
+        "51": "Ds3_v1.flac",
+        "54": "Fs3_v1.flac",
+        "57": "A3_v1.flac",
+        "60": "C4_v1.flac",
+        "63": "Ds4_v1.flac",
+        "66": "Fs4_v1.flac",
+        "69": "A4_v1.flac",
+        "72": "C5_v1.flac",
+        "75": "Ds5_v1.flac",
+        "78": "Fs5_v1.flac",
+        "81": "A5_v1.flac",
+        "84": "C6_v1.flac",
+        "87": "Ds6_v1.flac",
+        "90": "Fs6_v1.flac",
+        "93": "A6_v1.flac",
+        "96": "C7_v1.flac",
+        "99": "Ds7_v1.flac",
+        "102": "Fs7_v1.flac",
+        "105": "A7_v1.flac",
+        "108": "C8_v1.flac"
+      }
+    },
+    "v2": {
+      "velocity": [
+        43,
+        85
+      ],
+      "muestras": {
+        "21": "A0_v2.flac",
+        "24": "C1_v2.flac",
+        "27": "Ds1_v2.flac",
+        "30": "Fs1_v2.flac",
+        "33": "A1_v2.flac",
+        "36": "C2_v2.flac",
+        "39": "Ds2_v2.flac",
+        "42": "Fs2_v2.flac",
+        "45": "A2_v2.flac",
+        "48": "C3_v2.flac",
+        "51": "Ds3_v2.flac",
+        "54": "Fs3_v2.flac",
+        "57": "A3_v2.flac",
+        "60": "C4_v2.flac",
+        "63": "Ds4_v2.flac",
+        "66": "Fs4_v2.flac",
+        "69": "A4_v2.flac",
+        "72": "C5_v2.flac",
+        "75": "Ds5_v2.flac",
+        "78": "Fs5_v2.flac",
+        "81": "A5_v2.flac",
+        "84": "C6_v2.flac",
+        "87": "Ds6_v2.flac",
+        "90": "Fs6_v2.flac",
+        "93": "A6_v2.flac",
+        "96": "C7_v2.flac",
+        "99": "Ds7_v2.flac",
+        "102": "Fs7_v2.flac",
+        "105": "A7_v2.flac",
+        "108": "C8_v2.flac"
+      }
+    },
+    "v3": {
+      "velocity": [
+        86,
+        127
+      ],
+      "muestras": {
+        "21": "A0_v3.flac",
+        "24": "C1_v3.flac",
+        "27": "Ds1_v3.flac",
+        "30": "Fs1_v3.flac",
+        "33": "A1_v3.flac",
+        "36": "C2_v3.flac",
+        "39": "Ds2_v3.flac",
+        "42": "Fs2_v3.flac",
+        "45": "A2_v3.flac",
+        "48": "C3_v3.flac",
+        "51": "Ds3_v3.flac",
+        "54": "Fs3_v3.flac",
+        "57": "A3_v3.flac",
+        "60": "C4_v3.flac",
+        "63": "Ds4_v3.flac",
+        "66": "Fs4_v3.flac",
+        "69": "A4_v3.flac",
+        "72": "C5_v3.flac",
+        "75": "Ds5_v3.flac",
+        "78": "Fs5_v3.flac",
+        "81": "A5_v3.flac",
+        "84": "C6_v3.flac",
+        "87": "Ds6_v3.flac",
+        "90": "Fs6_v3.flac",
+        "93": "A6_v3.flac",
+        "96": "C7_v3.flac",
+        "99": "Ds7_v3.flac",
+        "102": "Fs7_v3.flac",
+        "105": "A7_v3.flac",
+        "108": "C8_v3.flac"
+      }
+    }
+  }
+}
